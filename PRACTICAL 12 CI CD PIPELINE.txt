@@ -1,0 +1,1519 @@
+============================================================
+PRACTICAL 12: CI/CD PIPELINE USING JENKINS, DOCKER AND KUBERNETES
+============================================================
+
+AIM:
+To implement a CI/CD pipeline using Jenkins, Docker, and
+Kubernetes to automate the building, testing, and deployment
+of an AI-based web application.
+
+------------------------------------------------------------
+1. UNDERSTANDING THE CONCEPTS
+------------------------------------------------------------
+
+What is CI/CD?
+
+CI/CD is a software development practice used to automate
+building, testing, and deploying applications.
+
+CI means Continuous Integration.
+
+CD means Continuous Delivery or Continuous Deployment.
+
+What is Continuous Integration?
+
+Continuous Integration automatically integrates code changes
+and performs build and testing operations.
+
+What is Continuous Delivery?
+
+Continuous Delivery prepares the application for deployment
+after successful testing.
+
+What is Continuous Deployment?
+
+Continuous Deployment automatically deploys successful
+application changes to the target environment.
+
+What is Jenkins?
+
+Jenkins is an open-source automation server used to create
+and execute CI/CD pipelines.
+
+What is a Jenkins Pipeline?
+
+A Jenkins Pipeline defines the sequence of automated steps
+required to build, test, and deploy an application.
+
+What is a Jenkinsfile?
+
+A Jenkinsfile is a text file containing the pipeline definition.
+
+What is Docker?
+
+Docker packages applications and dependencies into images
+and runs them inside containers.
+
+What is Kubernetes?
+
+Kubernetes manages containerized applications and provides
+deployment, scaling, and networking.
+
+What is Minikube?
+
+Minikube provides a local Kubernetes cluster for learning
+and practical demonstrations.
+
+
+------------------------------------------------------------
+2. UNDERSTANDING THE CI/CD WORKFLOW
+------------------------------------------------------------
+
+Our application is the Iris Flower Predictor developed
+in Practical 10 and Practical 11.
+
+The workflow is:
+
+DEVELOPER
+    |
+    |
+    v
+GITHUB
+(Source Code Repository)
+    |
+    |
+    v
+JENKINS
+(Detects Code Changes)
+    |
+    |
+    v
+BUILD STAGE
+(Docker Images)
+    |
+    |
+    v
+TEST STAGE
+(Check Application Code)
+    |
+    |
+    v
+DEPLOY STAGE
+(Load Images into Minikube)
+    |
+    |
+    v
+KUBERNETES
+(Deploy Application)
+    |
+    |
+    v
+RUNNING AI APPLICATION
+
+
+------------------------------------------------------------
+3. CHECK REQUIRED SOFTWARE
+------------------------------------------------------------
+
+Open Ubuntu Terminal.
+
+Check Java:
+
+java -version
+
+Check Jenkins:
+
+sudo systemctl status jenkins
+
+Check Docker:
+
+docker --version
+
+Check Minikube:
+
+minikube version
+
+Check kubectl:
+
+kubectl version --client
+
+Check Git:
+
+git --version
+
+Check Docker Compose:
+
+docker compose version
+
+All required tools should be installed.
+
+NOTE:
+
+Jenkins installation was covered in Practical 8.
+
+Docker was covered in Practical 9.
+
+Minikube and kubectl were covered in Practical 11.
+
+
+------------------------------------------------------------
+4. START REQUIRED SERVICES
+------------------------------------------------------------
+
+Step 1: Start Docker.
+
+sudo systemctl start docker
+
+Step 2: Start Jenkins.
+
+sudo systemctl start jenkins
+
+Step 3: Start Minikube.
+
+minikube start --driver=docker
+
+Step 4: Check Minikube.
+
+minikube status
+
+Step 5: Check Kubernetes nodes.
+
+kubectl get nodes
+
+Expected:
+
+minikube   Ready
+
+Step 6: Check Jenkins.
+
+Open browser:
+
+http://localhost:8080
+
+Log in to Jenkins.
+
+IMPORTANT:
+
+Keep Jenkins, Docker, and Minikube running during this practical.
+
+
+------------------------------------------------------------
+5. CONFIGURE JENKINS PLUGINS
+------------------------------------------------------------
+
+Open Jenkins.
+
+Go to:
+
+Manage Jenkins
+    |
+    v
+Plugins
+    |
+    v
+Available Plugins
+
+Search for and install:
+
+1. Git Plugin
+2. GitHub Plugin
+3. Pipeline Plugin
+
+If the plugins are already installed from Practical 8,
+you do not need to install them again.
+
+Restart Jenkins if requested.
+
+
+------------------------------------------------------------
+6. GIVE JENKINS ACCESS TO DOCKER
+------------------------------------------------------------
+
+IMPORTANT:
+
+Jenkins normally runs using a separate Linux user named
+jenkins.
+
+We must allow Jenkins to execute Docker commands.
+
+Step 1: Add Jenkins to Docker group.
+
+sudo usermod -aG docker jenkins
+
+Step 2: Restart Jenkins.
+
+sudo systemctl restart jenkins
+
+Step 3: Verify Jenkins service.
+
+sudo systemctl status jenkins
+
+Explanation:
+
+Docker commands are normally restricted to users who have
+permission to access the Docker daemon.
+
+Adding Jenkins to the Docker group allows Jenkins to execute
+Docker commands.
+
+SECURITY NOTE:
+
+Membership in the Docker group provides powerful access
+to the host machine.
+
+
+------------------------------------------------------------
+7. GIVE JENKINS ACCESS TO MINIKUBE AND KUBECTL
+------------------------------------------------------------
+
+This step is important because Jenkins runs as a separate
+Linux user.
+
+The Minikube cluster was created using your Ubuntu account.
+
+Jenkins needs access to the same cluster.
+
+Step 1: Copy Minikube configuration to Jenkins home.
+
+sudo cp -a "$HOME/.minikube" /var/lib/jenkins/
+
+Step 2: Give Jenkins ownership of the copied configuration.
+
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.minikube
+
+Step 3: Create a flattened Kubernetes configuration.
+
+kubectl config view --raw --flatten > /tmp/jenkins-kubeconfig
+
+Explanation:
+
+This creates a kubeconfig file containing the required
+certificate information.
+
+Step 4: Create Jenkins Kubernetes configuration directory.
+
+sudo install -d -o jenkins -g jenkins -m 700 /var/lib/jenkins/.kube
+
+Step 5: Copy the Kubernetes configuration.
+
+sudo install -o jenkins -g jenkins -m 600 /tmp/jenkins-kubeconfig /var/lib/jenkins/.kube/config
+
+Step 6: Remove temporary configuration.
+
+rm /tmp/jenkins-kubeconfig
+
+Step 7: Verify kubectl is installed.
+
+which kubectl
+
+Step 8: Verify Minikube is installed.
+
+which minikube
+
+IMPORTANT:
+
+Jenkins must have access to:
+
+/var/lib/jenkins/.minikube
+/var/lib/jenkins/.kube/config
+
+The Minikube cluster must be running.
+
+This practical uses a local Minikube cluster and is intended
+for a laboratory environment.
+
+Do not use this permission arrangement as a production
+security configuration.
+
+
+------------------------------------------------------------
+8. CREATE THE PROJECT DIRECTORY
+------------------------------------------------------------
+
+Create the project directory:
+
+mkdir -p ~/DevOps-Practical-Exam/Practical-12-CICD
+
+Enter the directory:
+
+cd ~/DevOps-Practical-Exam/Practical-12-CICD
+
+Create the following directories:
+
+mkdir backend frontend k8s
+
+Project structure:
+
+Practical-12-CICD/
+|
+|---- backend/
+|     |
+|     |---- app.py
+|     |---- requirements.txt
+|     |---- Dockerfile
+|
+|---- frontend/
+|     |
+|     |---- index.html
+|     |---- nginx.conf
+|     |---- Dockerfile
+|
+|---- k8s/
+|     |
+|     |---- deployment.yaml
+|
+|---- Jenkinsfile
+
+
+------------------------------------------------------------
+9. ADD APPLICATION FILES
+------------------------------------------------------------
+
+We will reuse the application created in Practical 10.
+
+BACKEND FILES:
+
+backend/app.py
+backend/requirements.txt
+backend/Dockerfile
+
+FRONTEND FILES:
+
+frontend/index.html
+frontend/nginx.conf
+frontend/Dockerfile
+
+KUBERNETES FILE:
+
+k8s/deployment.yaml
+
+Use the corresponding file contents from Practical 10
+and Practical 11.
+
+IMPORTANT:
+
+The Kubernetes manifest must use the same image names
+that Jenkins will build.
+
+Backend image:
+
+iris-backend:1.0
+
+Frontend image:
+
+iris-frontend:1.0
+
+In deployment.yaml, verify the backend image:
+
+image: iris-backend:1.0
+
+Verify the frontend image:
+
+image: iris-frontend:1.0
+
+Keep:
+
+imagePullPolicy: IfNotPresent
+
+This allows Kubernetes to use the locally loaded images.
+
+Also verify that the frontend, backend, and database
+Services are configured correctly.
+
+
+------------------------------------------------------------
+10. CREATE JENKINSFILE
+------------------------------------------------------------
+
+What is Jenkinsfile?
+
+Jenkinsfile is a file that defines the stages of a Jenkins
+Pipeline.
+
+We will create three stages:
+
+1. Build
+2. Test
+3. Deploy
+
+Create the file:
+
+nano Jenkinsfile
+
+Add the following code.
+
+----------------------------------------
+FILE: Jenkinsfile
+----------------------------------------
+
+pipeline {
+
+    agent any
+
+    environment {
+
+        MINIKUBE_HOME = '/var/lib/jenkins/.minikube'
+
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+
+    }
+
+    stages {
+
+        stage('Checkout') {
+
+            steps {
+
+                echo 'Checking out application source code'
+
+                checkout scm
+
+            }
+
+        }
+
+
+        stage('Build') {
+
+            steps {
+
+                echo 'Building Docker images'
+
+                sh '''
+                    docker build -t iris-backend:1.0 ./backend
+
+                    docker build -t iris-frontend:1.0 ./frontend
+                '''
+
+            }
+
+        }
+
+
+        stage('Test') {
+
+            steps {
+
+                echo 'Testing application files'
+
+                sh '''
+                    python3 -m py_compile backend/app.py
+
+                    test -f frontend/index.html
+
+                    test -f k8s/deployment.yaml
+                '''
+
+            }
+
+        }
+
+
+        stage('Deploy') {
+
+            steps {
+
+                echo 'Loading Docker images into Minikube'
+
+                sh '''
+                    minikube image load iris-backend:1.0
+
+                    minikube image load iris-frontend:1.0
+                '''
+
+                echo 'Deploying application to Kubernetes'
+
+                sh '''
+                    kubectl apply -f k8s/deployment.yaml
+
+                    kubectl rollout status deployment/db --timeout=180s
+
+                    kubectl rollout status deployment/backend --timeout=180s
+
+                    kubectl rollout status deployment/frontend --timeout=180s
+                '''
+
+                echo 'Restarting application deployments'
+
+                sh '''
+                    kubectl rollout restart deployment/backend
+
+                    kubectl rollout restart deployment/frontend
+
+                    kubectl rollout status deployment/backend --timeout=180s
+
+                    kubectl rollout status deployment/frontend --timeout=180s
+                '''
+
+            }
+
+        }
+
+    }
+
+    post {
+
+        success {
+
+            echo 'CI/CD Pipeline completed successfully!'
+
+        }
+
+        failure {
+
+            echo 'CI/CD Pipeline failed. Check the console output.'
+
+        }
+
+    }
+
+}
+
+----------------------------------------
+
+Save the file.
+
+Press:
+
+CTRL + O
+Enter
+CTRL + X
+
+
+------------------------------------------------------------
+11. UNDERSTANDING JENKINSFILE
+------------------------------------------------------------
+
+pipeline:
+
+Defines a Jenkins Pipeline.
+
+agent any:
+
+Allows the pipeline to run on any available Jenkins agent.
+
+environment:
+
+Defines environment variables used by the pipeline.
+
+MINIKUBE_HOME:
+
+Specifies the location of the Minikube configuration.
+
+KUBECONFIG:
+
+Specifies the Kubernetes configuration file.
+
+stages:
+
+Contains the different stages of the pipeline.
+
+stage:
+
+Defines an individual stage.
+
+steps:
+
+Contains commands executed in that stage.
+
+sh:
+
+Executes shell commands on the Jenkins agent.
+
+echo:
+
+Displays a message in the Jenkins console.
+
+checkout scm:
+
+Checks out the source code from the configured repository.
+
+post:
+
+Defines actions to perform after pipeline execution.
+
+success:
+
+Executes when the pipeline succeeds.
+
+failure:
+
+Executes when the pipeline fails.
+
+
+------------------------------------------------------------
+12. UNDERSTANDING THE PIPELINE STAGES
+------------------------------------------------------------
+
+STAGE 1: CHECKOUT
+
+Jenkins downloads the application source code from GitHub.
+
+STAGE 2: BUILD
+
+Jenkins builds two Docker images:
+
+iris-backend:1.0
+iris-frontend:1.0
+
+STAGE 3: TEST
+
+Jenkins checks:
+
+1. Whether backend Python code compiles.
+2. Whether frontend index.html exists.
+3. Whether Kubernetes deployment file exists.
+
+STAGE 4: DEPLOY
+
+Jenkins performs the following operations:
+
+1. Loads backend image into Minikube.
+2. Loads frontend image into Minikube.
+3. Applies Kubernetes deployment configuration.
+4. Waits for database, backend, and frontend deployments.
+5. Restarts backend and frontend deployments.
+6. Verifies rollout status.
+
+The application is now deployed through Jenkins.
+
+
+------------------------------------------------------------
+13. INITIALIZE GIT REPOSITORY
+------------------------------------------------------------
+
+Make sure you are in the project directory.
+
+Initialize Git:
+
+git init
+
+Add all files:
+
+git add .
+
+Commit the files:
+
+git commit -m "Initial CI CD project"
+
+Rename the branch to main:
+
+git branch -M main
+
+Create a GitHub repository named:
+
+iris-ai-cicd
+
+Do not initialize the GitHub repository with a README
+if you have already initialized this local project.
+
+Connect the local repository to GitHub:
+
+git remote add origin https://github.com/YOUR_USERNAME/iris-ai-cicd.git
+
+Replace YOUR_USERNAME with your GitHub username.
+
+Push the project:
+
+git push -u origin main
+
+Verify that the files are available on GitHub.
+
+The repository should contain:
+
+backend/
+frontend/
+k8s/
+Jenkinsfile
+
+
+------------------------------------------------------------
+14. CREATE A PIPELINE JOB IN JENKINS
+------------------------------------------------------------
+
+Step 1:
+
+Open Jenkins:
+
+http://localhost:8080
+
+Step 2:
+
+Click:
+
+New Item
+
+Step 3:
+
+Enter the job name:
+
+Iris-AI-CICD
+
+Step 4:
+
+Select:
+
+Pipeline
+
+Step 5:
+
+Click OK.
+
+Step 6:
+
+Scroll to the Pipeline section.
+
+Step 7:
+
+Select:
+
+Pipeline script from SCM
+
+Step 8:
+
+Select SCM:
+
+Git
+
+Step 9:
+
+Enter Repository URL:
+
+https://github.com/YOUR_USERNAME/iris-ai-cicd.git
+
+Replace YOUR_USERNAME with your GitHub username.
+
+Step 10:
+
+Credentials:
+
+For a public GitHub repository, credentials can remain None.
+
+For a private repository, configure suitable GitHub credentials.
+
+Step 11:
+
+Branch Specifier:
+
+*/main
+
+Step 12:
+
+Script Path:
+
+Jenkinsfile
+
+Step 13:
+
+Click Save.
+
+The Jenkins Pipeline job is now configured.
+
+
+------------------------------------------------------------
+15. RUN THE JENKINS PIPELINE
+------------------------------------------------------------
+
+Step 1:
+
+Open the Iris-AI-CICD job.
+
+Step 2:
+
+Click:
+
+Build Now
+
+Step 3:
+
+Jenkins will execute the pipeline.
+
+Step 4:
+
+Click the running build number.
+
+Step 5:
+
+Open:
+
+Console Output
+
+Observe the pipeline stages.
+
+Expected stages:
+
+Checkout
+Build
+Test
+Deploy
+
+Expected final message:
+
+CI/CD Pipeline completed successfully!
+
+The build should show:
+
+Finished: SUCCESS
+
+
+------------------------------------------------------------
+16. VERIFY DOCKER IMAGES
+------------------------------------------------------------
+
+Open Ubuntu Terminal.
+
+Run:
+
+docker images
+
+Expected images:
+
+iris-backend   1.0
+iris-frontend  1.0
+
+These images were created by Jenkins.
+
+They were then loaded into Minikube.
+
+
+------------------------------------------------------------
+17. VERIFY KUBERNETES DEPLOYMENT
+------------------------------------------------------------
+
+Run:
+
+kubectl get deployments
+
+Expected:
+
+db
+backend
+frontend
+
+Check Pods:
+
+kubectl get pods
+
+All application Pods should eventually show:
+
+STATUS: Running
+
+Check Services:
+
+kubectl get services
+
+Expected Services:
+
+db
+backend
+iris-frontend
+
+Check all Kubernetes resources:
+
+kubectl get all
+
+
+------------------------------------------------------------
+18. ACCESS THE DEPLOYED APPLICATION
+------------------------------------------------------------
+
+Run:
+
+minikube service iris-frontend --url
+
+Copy the displayed URL.
+
+Open it in your browser.
+
+The Iris AI Predictor webpage should appear.
+
+Enter sample measurements:
+
+Sepal Length: 5.1
+Sepal Width: 3.5
+Petal Length: 1.4
+Petal Width: 0.2
+
+Click:
+
+Predict Flower
+
+Expected result:
+
+Predicted Flower: setosa
+
+This confirms that Jenkins successfully deployed the
+application to Kubernetes.
+
+
+------------------------------------------------------------
+19. AUTOMATE THE PIPELINE USING GITHUB CHANGES
+------------------------------------------------------------
+
+We can configure Jenkins to check GitHub for changes.
+
+Step 1:
+
+Open Jenkins.
+
+Step 2:
+
+Open the Iris-AI-CICD job.
+
+Step 3:
+
+Click Configure.
+
+Step 4:
+
+Find:
+
+Build Triggers
+
+Step 5:
+
+Select:
+
+Poll SCM
+
+Step 6:
+
+Enter the schedule:
+
+H/2 * * * *
+
+Explanation:
+
+Jenkins checks the repository periodically, approximately
+every two minutes, using a distributed schedule.
+
+Step 7:
+
+Click Save.
+
+Step 8:
+
+Make a small change to the project.
+
+For example, edit a comment in:
+
+backend/app.py
+
+Step 9:
+
+Commit the change:
+
+git add .
+
+git commit -m "Update application"
+
+Step 10:
+
+Push the change:
+
+git push
+
+Step 11:
+
+Wait for the next polling check.
+
+Step 12:
+
+Open Jenkins and observe the new build.
+
+Jenkins should detect the change and execute the pipeline.
+
+IMPORTANT:
+
+Poll SCM checks the repository periodically.
+
+It is not an immediate GitHub webhook notification.
+
+For an actual webhook, configure the GitHub repository's
+webhook URL and enable the appropriate GitHub trigger
+in Jenkins.
+
+
+------------------------------------------------------------
+20. IMPORTANT JENKINS COMMANDS
+------------------------------------------------------------
+
+Check Jenkins status:
+
+sudo systemctl status jenkins
+
+Start Jenkins:
+
+sudo systemctl start jenkins
+
+Stop Jenkins:
+
+sudo systemctl stop jenkins
+
+Restart Jenkins:
+
+sudo systemctl restart jenkins
+
+View Jenkins logs:
+
+sudo journalctl -u jenkins -f
+
+Check Docker:
+
+docker ps
+
+List Docker images:
+
+docker images
+
+Check Minikube:
+
+minikube status
+
+Check Kubernetes Pods:
+
+kubectl get pods
+
+Check Deployments:
+
+kubectl get deployments
+
+Check Services:
+
+kubectl get services
+
+Apply Kubernetes configuration:
+
+kubectl apply -f k8s/deployment.yaml
+
+Check rollout:
+
+kubectl rollout status deployment/backend
+
+View backend logs:
+
+kubectl logs deployment/backend
+
+Scale backend:
+
+kubectl scale deployment backend --replicas=3
+
+
+------------------------------------------------------------
+21. COMMON ERRORS AND SOLUTIONS
+------------------------------------------------------------
+
+ERROR 1: Jenkins cannot execute Docker commands.
+
+Reason:
+Jenkins does not have permission to access Docker.
+
+Solution:
+
+sudo usermod -aG docker jenkins
+
+sudo systemctl restart jenkins
+
+Check Docker service:
+
+sudo systemctl status docker
+
+
+ERROR 2: Permission denied while accessing Docker socket.
+
+Reason:
+Jenkins may not have received the updated group membership.
+
+Solution:
+
+Restart Jenkins:
+
+sudo systemctl restart jenkins
+
+Check Docker group:
+
+getent group docker
+
+Verify Jenkins belongs to the Docker group.
+
+
+ERROR 3: minikube command not found in Jenkins.
+
+Reason:
+Minikube is not available in the Jenkins PATH.
+
+Solution:
+
+Check its location:
+
+which minikube
+
+Make sure its installation directory is available
+to the Jenkins service.
+
+Common location:
+
+/usr/local/bin/minikube
+
+
+ERROR 4: kubectl cannot connect to Kubernetes.
+
+Reason:
+Jenkins may not have the correct kubeconfig.
+
+Solution:
+
+Check the file:
+
+sudo ls -l /var/lib/jenkins/.kube/config
+
+Verify the Jenkinsfile contains:
+
+KUBECONFIG = '/var/lib/jenkins/.kube/config'
+
+Verify Minikube is running.
+
+
+ERROR 5: Minikube profile not found.
+
+Reason:
+Jenkins cannot access the Minikube configuration.
+
+Solution:
+
+Check:
+
+sudo ls /var/lib/jenkins/.minikube
+
+Verify the Jenkinsfile contains:
+
+MINIKUBE_HOME = '/var/lib/jenkins/.minikube'
+
+Make sure the Minikube profile was copied correctly.
+
+
+ERROR 6: ImagePullBackOff.
+
+Reason:
+Kubernetes cannot find the required Docker image.
+
+Solution:
+
+Check images:
+
+minikube image ls
+
+Load images:
+
+minikube image load iris-backend:1.0
+
+minikube image load iris-frontend:1.0
+
+Verify image names in deployment.yaml.
+
+
+ERROR 7: Jenkins Pipeline fails during checkout.
+
+Reason:
+Repository URL or credentials may be incorrect.
+
+Solution:
+
+Check the GitHub repository URL.
+
+For a private repository, configure Git credentials.
+
+
+ERROR 8: Jenkins Pipeline fails during Python test.
+
+Reason:
+Python code contains a syntax error or Python is unavailable.
+
+Solution:
+
+Check:
+
+python3 --version
+
+Run:
+
+python3 -m py_compile backend/app.py
+
+Correct the syntax error and commit the changes.
+
+
+ERROR 9: Jenkins Pipeline fails during Kubernetes deployment.
+
+Reason:
+The Kubernetes configuration may be incorrect or
+the cluster may not be running.
+
+Solution:
+
+Check:
+
+minikube status
+
+kubectl get nodes
+
+kubectl get pods
+
+Check Jenkins Console Output for the exact error.
+
+
+ERROR 10: New code is not reflected in the application.
+
+Reason:
+The image may not have been rebuilt or the deployment
+may not have restarted.
+
+Solution:
+
+Check the Build stage.
+
+Check the Deploy stage.
+
+Verify the pipeline runs:
+
+minikube image load iris-backend:1.0
+
+kubectl rollout restart deployment/backend
+
+
+------------------------------------------------------------
+22. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is CI/CD?
+
+Ans:
+CI/CD is a software development practice used to automate
+building, testing, and deploying applications.
+
+Q2. What is Jenkins?
+
+Ans:
+Jenkins is an open-source automation server used to create
+CI/CD pipelines.
+
+Q3. What is a Jenkins Pipeline?
+
+Ans:
+It is a sequence of automated steps used to build,
+test, and deploy an application.
+
+Q4. What is Jenkinsfile?
+
+Ans:
+Jenkinsfile is a text file containing pipeline instructions.
+
+Q5. What is Continuous Integration?
+
+Ans:
+It is the practice of automatically integrating and
+testing code changes.
+
+Q6. What is Continuous Deployment?
+
+Ans:
+It automatically deploys successful code changes
+to the target environment.
+
+Q7. What is the purpose of the Build stage?
+
+Ans:
+It creates the Docker images required by the application.
+
+Q8. What is the purpose of the Test stage?
+
+Ans:
+It checks whether the application files pass the configured
+validation steps.
+
+Q9. What is the purpose of the Deploy stage?
+
+Ans:
+It deploys the application to the Kubernetes cluster.
+
+Q10. What is Poll SCM?
+
+Ans:
+Poll SCM periodically checks the source repository
+for code changes.
+
+Q11. What is a GitHub webhook?
+
+Ans:
+A webhook sends an event notification from GitHub to Jenkins
+when a configured event occurs.
+
+Q12. What is the difference between Poll SCM and webhook?
+
+Ans:
+Poll SCM checks the repository periodically.
+A webhook sends a notification when an event occurs.
+
+Q13. What is Docker image building?
+
+Ans:
+It is the process of creating a Docker image from a Dockerfile.
+
+Q14. What is Kubernetes deployment?
+
+Ans:
+It is the process of running and managing application Pods
+using Kubernetes resources.
+
+Q15. What is checkout scm?
+
+Ans:
+It checks out the source code from the configured
+source code repository.
+
+Q16. What is an agent in Jenkins?
+
+Ans:
+An agent is a machine or execution environment where
+Jenkins runs pipeline steps.
+
+Q17. What is the purpose of environment in Jenkinsfile?
+
+Ans:
+It defines environment variables used by the pipeline.
+
+Q18. What is the purpose of post in Jenkinsfile?
+
+Ans:
+It defines actions to perform after pipeline execution.
+
+Q19. What is the purpose of kubectl apply?
+
+Ans:
+It creates or updates Kubernetes resources using
+configuration files.
+
+Q20. What is the benefit of CI/CD?
+
+Ans:
+It reduces manual work, improves consistency, and makes
+software delivery faster.
+
+
+------------------------------------------------------------
+23. RESULT
+------------------------------------------------------------
+
+Successfully implemented a CI/CD pipeline using Jenkins,
+Docker, and Kubernetes.
+
+Connected the GitHub repository to Jenkins.
+
+Created a Jenkinsfile containing Checkout, Build, Test,
+and Deploy stages.
+
+Successfully built Docker images and deployed the AI
+application to a local Kubernetes cluster using Minikube.
+
+Verified the running application through a web browser.
+
+
+------------------------------------------------------------
+24. QUICK REVISION BEFORE PRACTICAL EXAM
+------------------------------------------------------------
+
+1. Start Docker:
+
+   sudo systemctl start docker
+
+2. Start Jenkins:
+
+   sudo systemctl start jenkins
+
+3. Start Minikube:
+
+   minikube start --driver=docker
+
+4. Check cluster:
+
+   kubectl get nodes
+
+5. Create project files:
+
+   backend/
+   frontend/
+   k8s/
+   Jenkinsfile
+
+6. Initialize Git:
+
+   git init
+
+7. Add files:
+
+   git add .
+
+8. Commit:
+
+   git commit -m "Initial CI CD project"
+
+9. Push to GitHub:
+
+   git push -u origin main
+
+10. Open Jenkins:
+
+    http://localhost:8080
+
+11. Create a Pipeline job.
+
+12. Select Pipeline script from SCM.
+
+13. Select Git.
+
+14. Enter GitHub repository URL.
+
+15. Set branch:
+
+    */main
+
+16. Set script path:
+
+    Jenkinsfile
+
+17. Save the job.
+
+18. Click Build Now.
+
+19. Observe:
+
+    Checkout
+    Build
+    Test
+    Deploy
+
+20. Verify Docker images:
+
+    docker images
+
+21. Verify Kubernetes Pods:
+
+    kubectl get pods
+
+22. Verify deployments:
+
+    kubectl get deployments
+
+23. Open application:
+
+    minikube service iris-frontend --url
+
+24. Test the prediction.
+
+25. Confirm:
+
+    Finished: SUCCESS
+
+
+============================================================
+END OF PRACTICAL 12
+============================================================

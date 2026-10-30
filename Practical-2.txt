@@ -1,0 +1,491 @@
+PRACTICAL 2 - GIT AND GITHUB: EVEN/ODD, BRANCH, REVERSE STRING AND PULL REQUEST
+================================================================================
+
+AIM
+---
+To create a GitHub repository, push an even/odd Python program to the main
+branch, create a GIT-EXAM branch, add a string-reversal program, push the
+branch, and create a Pull Request (PR) to merge GIT-EXAM into main.
+
+IMPORTANT
+---------
+This practical is independent. You can perform it even if Practical 1 is
+not completed.
+
+These instructions use Ubuntu Terminal. The same Git commands work in
+Git Bash on the college computer.
+
+REQUIREMENTS
+------------
+1. Ubuntu computer with Git installed.
+2. GitHub account.
+3. Internet connection.
+4. A web browser.
+
+------------------------------------------------------------
+STEP 1 - CHECK GIT
+------------------------------------------------------------
+
+Open Terminal using Ctrl + Alt + T.
+
+Run:
+
+    git --version
+
+If Git is not installed, run:
+
+    sudo apt update
+    sudo apt install git -y
+
+Configure your identity (use your own name and GitHub email):
+
+    git config --global user.name "Your Name"
+    git config --global user.email "your-email@example.com"
+
+Verify:
+
+    git config --global --list
+
+------------------------------------------------------------
+STEP 2 - CREATE A PROJECT FOLDER
+------------------------------------------------------------
+
+Go to your home directory:
+
+    cd ~
+
+Create a folder for this practical:
+
+    mkdir Practical-2
+    cd Practical-2
+
+Initialize Git:
+
+    git init
+
+Set the default branch name to main:
+
+    git branch -M main
+
+Check repository status:
+
+    git status
+
+EXPECTED:
+    On branch main
+    No commits yet
+
+EXPLANATION:
+- mkdir creates a folder.
+- cd enters a folder.
+- git init creates a Git repository in the current folder.
+- git branch -M main renames the current branch to main.
+- git status displays the current repository state.
+
+------------------------------------------------------------
+STEP 3 - CREATE THE GITHUB REPOSITORY
+------------------------------------------------------------
+
+1. Open https://github.com in your browser.
+2. Sign in to your GitHub account.
+3. Click the + icon near the top-right corner.
+4. Select New repository.
+5. Repository name: Practical-2-Even-Odd-Reverse
+6. Select Public (or the visibility required by your examiner).
+7. Do NOT select Add a README file, .gitignore, or License.
+8. Click Create repository.
+
+GitHub will display commands for connecting an existing repository.
+Copy the HTTPS repository URL. It will look like:
+
+    https://github.com/YOUR-USERNAME/Practical-2-Even-Odd-Reverse.git
+
+Connect your local repository to GitHub (replace the URL):
+
+    git remote add origin https://github.com/YOUR-USERNAME/Practical-2-Even-Odd-Reverse.git
+
+Verify:
+
+    git remote -v
+
+EXPLANATION:
+- origin is the conventional name for the remote GitHub repository.
+- git remote -v displays the remote repository URL.
+
+------------------------------------------------------------
+STEP 4 - CREATE THE EVEN/ODD PYTHON PROGRAM
+------------------------------------------------------------
+
+Create the file:
+
+    nano even_odd.py
+
+Type or paste this code:
+
+    number = int(input("Enter a number: "))
+
+    if number % 2 == 0:
+        print(number, "is Even")
+    else:
+        print(number, "is Odd")
+
+Save in Nano:
+- Press Ctrl + O, then Enter.
+- Press Ctrl + X to exit.
+
+Run the program:
+
+    python3 even_odd.py
+
+Example output 1:
+
+    Enter a number: 8
+    8 is Even
+
+Example output 2:
+
+    Enter a number: 7
+    7 is Odd
+
+EXPLANATION:
+- input() accepts input from the user.
+- int() converts the input into an integer.
+- % is the modulus operator; it gives the remainder.
+- A number divisible by 2 has remainder 0 and is even.
+- if/else selects which message to print.
+
+------------------------------------------------------------
+STEP 5 - COMMIT AND PUSH THE EVEN/ODD PROGRAM TO MAIN
+------------------------------------------------------------
+
+Check the file:
+
+    ls
+
+Check Git status:
+
+    git status
+
+Stage the file:
+
+    git add even_odd.py
+
+Commit:
+
+    git commit -m "Add even odd program"
+
+Push main to GitHub:
+
+    git push -u origin main
+
+If GitHub asks you to authenticate, complete the sign-in/authorization
+process shown by your browser or credential manager. A normal GitHub
+account password may not work as Git HTTPS authentication; use the
+authentication method GitHub presents.
+
+Verify:
+1. Refresh your GitHub repository page.
+2. Confirm that even_odd.py is visible.
+3. Open the file and show its code.
+
+EXPLANATION:
+- git add stages a file for the next commit.
+- git commit saves a snapshot in local Git history.
+- git push sends local commits to GitHub.
+- -u sets the upstream relationship, so later pushes can usually use
+  simply: git push
+
+------------------------------------------------------------
+STEP 6 - CREATE THE GIT-EXAM BRANCH
+------------------------------------------------------------
+
+Create and switch to a new branch:
+
+    git switch -c GIT-EXAM
+
+Check the current branch:
+
+    git branch
+
+The current branch has an asterisk (*) beside it. Expected:
+
+      main
+    * GIT-EXAM
+
+Alternative command (also valid):
+
+    git checkout -b GIT-EXAM
+
+EXPLANATION:
+- A branch is a separate line of development.
+- The new branch starts from the current commit on main.
+- git switch changes the branch you are working on.
+- -c creates the branch if it does not already exist.
+
+------------------------------------------------------------
+STEP 7 - CREATE THE REVERSE STRING PROGRAM
+------------------------------------------------------------
+
+Create the file:
+
+    nano reverse_string.py
+
+Enter:
+
+    text = input("Enter a string: ")
+
+    reversed_text = text[::-1]
+
+    print("Original string:", text)
+    print("Reversed string:", reversed_text)
+
+Save using Ctrl + O, Enter, then Ctrl + X.
+
+Run:
+
+    python3 reverse_string.py
+
+Example:
+
+    Enter a string: hello
+    Original string: hello
+    Reversed string: olleh
+
+EXPLANATION:
+- text[::-1] uses Python slicing with a step of -1.
+- A negative step reads the string from right to left.
+- The original string is not modified; a reversed string is produced.
+
+------------------------------------------------------------
+STEP 8 - COMMIT AND PUSH GIT-EXAM
+------------------------------------------------------------
+
+Check status:
+
+    git status
+
+Stage and commit:
+
+    git add reverse_string.py
+    git commit -m "Add reverse string program"
+
+Push the branch:
+
+    git push -u origin GIT-EXAM
+
+Verify on GitHub:
+1. Open the repository page.
+2. Open the branch selector (it may currently show main).
+3. Select GIT-EXAM.
+4. Confirm that reverse_string.py is present.
+5. Confirm that even_odd.py is also present.
+
+IMPORTANT:
+The GIT-EXAM branch was created from main, so it contains the existing
+even_odd.py file as well as the new reverse_string.py file.
+
+------------------------------------------------------------
+STEP 9 - CREATE A PULL REQUEST
+------------------------------------------------------------
+
+A Pull Request asks the repository owner to review and merge changes
+from one branch into another.
+
+On GitHub:
+
+1. Open your repository.
+2. Click the Pull requests tab.
+3. Click New pull request.
+4. Set the base branch to: main
+5. Set the compare branch to: GIT-EXAM
+6. Check that reverse_string.py appears in the changes.
+7. Click Create pull request.
+8. Title: Add reverse string program
+9. Add a short description, for example:
+   "This PR adds a Python program to reverse a user-entered string."
+10. Click Create pull request.
+
+For this practical, creating the PR is sufficient unless the examiner
+asks you to merge it.
+
+If asked to merge:
+1. Open the PR.
+2. Click Merge pull request.
+3. Click Confirm merge.
+4. The changes from GIT-EXAM will then be merged into main.
+
+------------------------------------------------------------
+STEP 10 - VERIFY THE BRANCHES
+------------------------------------------------------------
+
+In Terminal, run:
+
+    git branch -a
+
+This displays local and remote branches.
+
+To view commit history:
+
+    git log --oneline --all --graph
+
+To compare the files/changes in the branches:
+
+    git diff main..GIT-EXAM
+
+Before merging, the difference should show the addition of
+reverse_string.py.
+
+If you merged the PR, update your local main branch:
+
+    git switch main
+    git pull origin main
+
+Then check:
+
+    ls
+
+You should see:
+    even_odd.py
+    reverse_string.py
+
+------------------------------------------------------------
+COMMON ERRORS AND SOLUTIONS
+------------------------------------------------------------
+
+1. ERROR: 'git: command not found'
+   SOLUTION:
+       sudo apt update
+       sudo apt install git -y
+
+2. ERROR: 'Author identity unknown'
+   SOLUTION:
+       git config --global user.name "Your Name"
+       git config --global user.email "your-email@example.com"
+
+3. ERROR: 'remote origin already exists'
+   SOLUTION:
+       git remote -v
+   If the URL is incorrect, update it:
+       git remote set-url origin https://github.com/USERNAME/REPOSITORY.git
+
+4. ERROR: 'src refspec main does not match any'
+   CAUSE: There may be no commit yet, or the branch name may be different.
+   SOLUTION:
+       git status
+       git add .
+       git commit -m "Initial commit"
+       git branch -M main
+       git push -u origin main
+
+5. ERROR: 'failed to push some refs'
+   CAUSE: The GitHub repository may have been initialized with a README
+   or another commit.
+   SOLUTION:
+   For this practical, the simplest approach is to create a new empty
+   GitHub repository without a README, .gitignore, or License, then
+   connect it to this local repository.
+
+6. ERROR: Authentication failed
+   SOLUTION:
+   Complete GitHub's browser/credential-manager authentication flow.
+   If prompted for HTTPS credentials, use a supported token-based or
+   browser-based method; GitHub account passwords are not accepted for
+   ordinary Git HTTPS pushes.
+
+7. ERROR: 'nothing to commit, working tree clean'
+   MEANING:
+   There are no new changes to commit. Check that you saved or modified
+   the correct file.
+
+------------------------------------------------------------
+VIVA QUESTIONS AND ANSWERS
+------------------------------------------------------------
+
+Q1. What is Git?
+A. Git is a distributed version control system used to track changes
+   in files and coordinate development.
+
+Q2. What is GitHub?
+A. GitHub is an online platform for hosting Git repositories and
+   collaborating on projects.
+
+Q3. What is a repository?
+A. A repository is a project folder whose file changes and history
+   are tracked by Git.
+
+Q4. What is a branch?
+A. A branch is an independent line of development within a repository.
+
+Q5. What is the main branch?
+A. The main branch is commonly used as the primary or default branch.
+
+Q6. What is a commit?
+A. A commit is a saved snapshot of staged changes in Git history.
+
+Q7. What is git push?
+A. It uploads local commits to a remote repository.
+
+Q8. What is git pull?
+A. It fetches changes from a remote repository and integrates them
+   into the current local branch.
+
+Q9. What is a Pull Request?
+A. A Pull Request proposes changes from one branch to another so they
+   can be reviewed and merged.
+
+Q10. What is the difference between git add and git commit?
+A. git add stages changes; git commit records the staged changes
+   in the repository history.
+
+Q11. What does git switch -c GIT-EXAM do?
+A. It creates a branch named GIT-EXAM and switches to it.
+
+Q12. What does text[::-1] do in Python?
+A. It returns the characters of a string in reverse order.
+
+------------------------------------------------------------
+QUICK REVISION - COMMANDS
+------------------------------------------------------------
+
+    git --version
+    git config --global user.name "Your Name"
+    git config --global user.email "your-email@example.com"
+
+    mkdir Practical-2
+    cd Practical-2
+    git init
+    git branch -M main
+
+    git remote add origin https://github.com/USERNAME/REPOSITORY.git
+    git remote -v
+
+    nano even_odd.py
+    python3 even_odd.py
+    git add even_odd.py
+    git commit -m "Add even odd program"
+    git push -u origin main
+
+    git switch -c GIT-EXAM
+
+    nano reverse_string.py
+    python3 reverse_string.py
+    git add reverse_string.py
+    git commit -m "Add reverse string program"
+    git push -u origin GIT-EXAM
+
+    git branch -a
+    git log --oneline --all --graph
+    git diff main..GIT-EXAM
+
+Then create a Pull Request on GitHub:
+    base: main
+    compare: GIT-EXAM
+
+------------------------------------------------------------
+RESULT
+------------------------------------------------------------
+
+The even/odd Python program was committed and pushed to the main branch.
+A GIT-EXAM branch was created, the reverse-string Python program was
+added and pushed, and a Pull Request was created to merge GIT-EXAM
+into main.

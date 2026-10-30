@@ -1,0 +1,350 @@
+PRACTICAL 4 - GIT AND GITHUB: IGNORE FILES USING .gitignore
+=============================================================
+
+AIM
+---
+To create Python programs, create an IGNORE directory containing
+test1.txt and test2.txt, configure Git to ignore the directory using
+.gitignore, and verify that the ignored files are not pushed to GitHub.
+
+STEP 1 - INITIALIZE GIT
+-----------------------
+
+mkdir Practical-4
+cd Practical-4
+git init
+git branch -M main
+
+Configure Git if required:
+
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+
+STEP 2 - CREATE GITHUB REPOSITORY
+----------------------------------
+
+1. Open https://github.com
+2. Create a new repository.
+3. Repository name: Practical-4-GitIgnore
+4. Do not initialize with README, .gitignore, or License.
+5. Click Create repository.
+6. Copy the HTTPS URL.
+
+Connect the repository:
+
+git remote add origin https://github.com/USERNAME/Practical-4-GitIgnore.git
+
+STEP 3 - CREATE PYTHON PROGRAMS
+-------------------------------
+
+Create palindrome.py:
+
+nano palindrome.py
+
+Code:
+
+text = input("Enter a string: ")
+
+if text == text[::-1]:
+    print("Palindrome")
+else:
+    print("Not a palindrome")
+
+Save using Ctrl + O, Enter, Ctrl + X.
+
+Run:
+
+python3 palindrome.py
+
+Create program1.py:
+
+nano program1.py
+
+Code:
+
+for number in range(1, 11):
+    print("Square of", number, "=", number ** 2)
+
+Run:
+
+python3 program1.py
+
+STEP 4 - CREATE IGNORE DIRECTORY
+--------------------------------
+
+Create directory:
+
+mkdir IGNORE
+
+Create first file:
+
+nano IGNORE/test1.txt
+
+Enter:
+
+This is test file 1.
+This file should be ignored by Git.
+
+Create second file:
+
+nano IGNORE/test2.txt
+
+Enter:
+
+This is test file 2.
+This file should also be ignored by Git.
+
+Check:
+
+ls
+ls IGNORE
+
+STEP 5 - CREATE .gitignore
+--------------------------
+
+Create the file in the main project directory:
+
+nano .gitignore
+
+Add:
+
+IGNORE/
+
+Save and exit.
+
+IMPORTANT:
+- .gitignore starts with a dot.
+- IGNORE/ tells Git to ignore the directory and its contents.
+- Create .gitignore in the project root directory.
+
+Check:
+
+cat .gitignore
+
+STEP 6 - VERIFY IGNORED FILES
+------------------------------
+
+Run:
+
+git status
+
+Expected:
+- palindrome.py should appear.
+- program1.py should appear.
+- .gitignore should appear.
+- IGNORE/test1.txt and IGNORE/test2.txt should not appear.
+
+Display ignored files:
+
+git status --ignored
+
+Check the exact ignore rule:
+
+git check-ignore -v IGNORE/test1.txt
+git check-ignore -v IGNORE/test2.txt
+
+Expected:
+The IGNORE/ rule should be displayed for both files.
+
+STEP 7 - ADD, COMMIT AND PUSH
+-----------------------------
+
+Stage files:
+
+git add .
+
+Check:
+
+git status
+
+IMPORTANT:
+The IGNORE directory should not be staged.
+
+Commit:
+
+git commit -m "Add programs and gitignore"
+
+Push:
+
+git push -u origin main
+
+STEP 8 - VERIFY ON GITHUB
+--------------------------
+
+1. Open your GitHub repository.
+2. Refresh the page.
+3. Confirm these files are visible:
+
+   .gitignore
+   palindrome.py
+   program1.py
+
+4. Confirm IGNORE directory is not visible.
+
+OPTIONAL - FORCE ADD AN IGNORED FILE
+-------------------------------------
+
+Only demonstrate this if the examiner asks.
+
+git add -f IGNORE/test1.txt
+
+This force-adds a file even though it is ignored.
+
+To remove it from staging without deleting the local file:
+
+git restore --staged IGNORE/test1.txt
+
+IMPORTANT CONCEPT
+-----------------
+
+.gitignore does not delete files from your computer.
+
+It also does not automatically stop tracking files that were already
+committed before the ignore rule was added.
+
+If files were previously tracked, use:
+
+git rm -r --cached IGNORE/
+git add .gitignore
+git commit -m "Stop tracking ignored directory"
+git push
+
+The --cached option removes files from Git tracking but keeps the
+local copies.
+
+COMMON ERRORS AND SOLUTIONS
+----------------------------
+
+1. IGNORE directory appears in git status
+
+Check:
+
+cat .gitignore
+
+Ensure it contains:
+
+IGNORE/
+
+Ensure .gitignore is in the project root directory.
+
+2. .gitignore is not visible on GitHub
+
+Run:
+
+git add .gitignore
+git commit -m "Add gitignore file"
+git push
+
+3. Ignored files are still visible on GitHub
+
+They may have been committed before adding the ignore rule.
+
+Use:
+
+git rm -r --cached IGNORE/
+git add .gitignore
+git commit -m "Stop tracking ignored directory"
+git push
+
+4. Git is not installed
+
+sudo apt update
+sudo apt install git -y
+
+5. Author identity unknown
+
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+
+6. Remote origin already exists
+
+git remote -v
+
+To update the URL:
+
+git remote set-url origin https://github.com/USERNAME/REPOSITORY.git
+
+VIVA QUESTIONS AND ANSWERS
+---------------------------
+
+Q1. What is Git?
+A. Git is a distributed version control system.
+
+Q2. What is GitHub?
+A. GitHub is an online platform for hosting Git repositories.
+
+Q3. What is .gitignore?
+A. It is a configuration file that specifies files and directories
+   Git should ignore.
+
+Q4. Why do we use .gitignore?
+A. To prevent unnecessary files, temporary files, generated files,
+   or local files from being added to a repository.
+
+Q5. What does IGNORE/ mean?
+A. It tells Git to ignore the IGNORE directory and its contents.
+
+Q6. Does .gitignore delete files?
+A. No. The files remain on the computer.
+
+Q7. Does .gitignore stop tracking an already committed file?
+A. No. Previously tracked files remain tracked until removed
+   from Git's index.
+
+Q8. What does git status --ignored do?
+A. Displays ignored files and directories.
+
+Q9. What does git check-ignore -v do?
+A. Shows which ignore rule matches a file.
+
+Q10. What does git add -f do?
+A. Force-adds a file even if it matches an ignore rule.
+
+Q11. What does git commit do?
+A. Saves staged changes in Git history.
+
+Q12. What does git push do?
+A. Uploads local commits to a remote repository.
+
+QUICK REVISION - COMMANDS
+-------------------------
+
+mkdir Practical-4
+cd Practical-4
+git init
+git branch -M main
+
+git remote add origin https://github.com/USERNAME/REPOSITORY.git
+
+nano palindrome.py
+nano program1.py
+
+mkdir IGNORE
+nano IGNORE/test1.txt
+nano IGNORE/test2.txt
+
+nano .gitignore
+
+Add:
+IGNORE/
+
+cat .gitignore
+git status
+git status --ignored
+
+git check-ignore -v IGNORE/test1.txt
+git check-ignore -v IGNORE/test2.txt
+
+git add .
+git status
+git commit -m "Add programs and gitignore"
+git push -u origin main
+
+RESULT
+------
+
+The palindrome and squares Python programs were created.
+An IGNORE directory containing test1.txt and test2.txt was created.
+The .gitignore file was configured to ignore the IGNORE directory.
+The required files were committed and pushed to GitHub, and the
+ignored files were verified as not being tracked or pushed.

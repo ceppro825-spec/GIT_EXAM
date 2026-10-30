@@ -1,0 +1,476 @@
+PRACTICAL 1 - GIT AND GITHUB USING UBUNTU TERMINAL
+==================================================
+
+AIM
+---
+Initialize a Git repository, connect it to GitHub, create and push Python
+programs, create a branch, and demonstrate the difference between main and
+GIT-EXAM branches.
+
+IMPORTANT
+---------
+The question paper mentions Git Bash. Git Bash is for Windows.
+On Ubuntu, use the Terminal. The Git commands are the same.
+
+REQUIREMENTS
+------------
+1. Ubuntu
+2. Git
+3. GitHub account
+4. Internet connection
+5. Text editor (VS Code or Ubuntu Text Editor)
+
+STEP 1 - CHECK AND INSTALL GIT
+------------------------------
+Open Terminal using Ctrl + Alt + T.
+
+Check whether Git is installed:
+
+    git --version
+
+If the command is not found, install Git:
+
+    sudo apt update
+    sudo apt install git -y
+
+Check again:
+
+    git --version
+
+STEP 2 - CONFIGURE GIT
+---------------------
+Configure your name and GitHub-associated email.
+Do this only once on your computer.
+
+    git config --global user.name "Your Name"
+    git config --global user.email "your-email@example.com"
+
+Verify:
+
+    git config --global --list
+
+You should see user.name and user.email.
+
+STEP 3 - CREATE THE PROJECT FOLDER
+----------------------------------
+Go to your home directory:
+
+    cd ~
+
+Create and enter the project folder:
+
+    mkdir DataScienceProject
+    cd DataScienceProject
+
+Check the current location:
+
+    pwd
+
+List files, including hidden files:
+
+    ls -la
+
+STEP 4 - INITIALIZE THE GIT REPOSITORY
+--------------------------------------
+Run:
+
+    git init
+
+This creates a hidden .git directory. Git uses it to store repository
+information and version history.
+
+Verify:
+
+    ls -la
+    git status
+
+STEP 5 - CREATE AN EMPTY REPOSITORY ON GITHUB
+---------------------------------------------
+1. Open https://github.com and sign in.
+2. Click the + button and select New repository.
+3. Repository name: DataScienceProject
+4. Choose Public or Private as instructed.
+5. Do NOT select Add a README file, .gitignore, or license.
+   The remote repository should be empty for this procedure.
+6. Click Create repository.
+7. Copy the HTTPS repository URL.
+
+Example URL (replace with your own):
+
+    https://github.com/YOUR-USERNAME/DataScienceProject.git
+
+STEP 6 - CONNECT THE LOCAL REPOSITORY TO GITHUB
+------------------------------------------------
+In the Ubuntu Terminal, while inside DataScienceProject, run:
+
+    git remote add origin https://github.com/YOUR-USERNAME/DataScienceProject.git
+
+Replace the example URL with your actual repository URL.
+
+Verify the remote:
+
+    git remote -v
+
+The name "origin" is the conventional nickname for the remote GitHub
+repository.
+
+STEP 7 - CREATE program1.py
+---------------------------
+Create the file:
+
+    touch program1.py
+
+Open it in a text editor. For VS Code:
+
+    code program1.py
+
+If the code command is unavailable, open the file using the installed
+Ubuntu text editor, or use:
+
+    nano program1.py
+
+Enter this Python program and save the file:
+
+    num = int(input("Enter a number: "))
+
+    for i in range(1, 11):
+        print(num, "x", i, "=", num * i)
+
+Run the program:
+
+    python3 program1.py
+
+Example:
+
+    Enter a number: 5
+    5 x 1 = 5
+    5 x 2 = 10
+    5 x 3 = 15
+    ...
+    5 x 10 = 50
+
+If python3 is not installed:
+
+    sudo apt update
+    sudo apt install python3 -y
+
+STEP 8 - CHECK, STAGE AND COMMIT program1.py
+--------------------------------------------
+Check the repository status:
+
+    git status
+
+Add the file to the staging area:
+
+    git add program1.py
+
+Check the status again:
+
+    git status
+
+Commit the staged file:
+
+    git commit -m "Add multiplication table program"
+
+Meaning:
+- git status: displays the state of the working directory and staging area.
+- git add: stages changes for the next commit.
+- git commit: saves a snapshot in the local repository.
+
+STEP 9 - PUSH THE MAIN BRANCH TO GITHUB
+---------------------------------------
+Set the current branch name to main:
+
+    git branch -M main
+
+Push the commit to GitHub:
+
+    git push -u origin main
+
+Sign in or complete GitHub authentication if prompted. GitHub does not
+accept normal account passwords for Git HTTPS operations. Follow the
+browser/device authentication prompt, or use a Personal Access Token if
+required.
+
+Verify:
+1. Open your GitHub repository in a browser.
+2. Refresh the page.
+3. Confirm that program1.py is visible.
+
+The -u option sets the upstream relationship so future pushes can use
+the shorter command: git push.
+
+STEP 10 - CREATE AND SWITCH TO GIT-EXAM BRANCH
+----------------------------------------------
+Create the branch and switch to it:
+
+    git switch -c GIT-EXAM
+
+Verify branches:
+
+    git branch
+
+Expected idea:
+
+      main
+    * GIT-EXAM
+
+The asterisk marks the branch currently checked out.
+
+STEP 11 - CREATE program2.py
+----------------------------
+Create the file:
+
+    touch program2.py
+
+Open it:
+
+    code program2.py
+
+Or use:
+
+    nano program2.py
+
+Enter this program and save:
+
+    a = int(input("Enter first number: "))
+    b = int(input("Enter second number: "))
+
+    if a > b:
+        print("Greatest number is:", a)
+    elif b > a:
+        print("Greatest number is:", b)
+    else:
+        print("Both numbers are equal.")
+
+Run:
+
+    python3 program2.py
+
+Example:
+
+    Enter first number: 20
+    Enter second number: 10
+    Greatest number is: 20
+
+NOTE ABOUT THE QUESTION PAPER:
+It says to create a file named "program2". Since this is a Python program,
+program2.py is a practical filename with the Python extension. If your
+examiner specifically requires the exact filename program2, use that exact
+name instead and run it with: python3 program2
+
+STEP 12 - STAGE AND COMMIT program2.py
+--------------------------------------
+Run:
+
+    git status
+    git add program2.py
+    git status
+    git commit -m "Add greatest of two numbers program"
+
+STEP 13 - PUSH GIT-EXAM BRANCH TO GITHUB
+----------------------------------------
+Run:
+
+    git push -u origin GIT-EXAM
+
+Open your GitHub repository and refresh. You should now be able to see
+both main and GIT-EXAM branches in the branch selector.
+
+STEP 14 - DEMONSTRATE THE DIFFERENCE BETWEEN BRANCHES
+-----------------------------------------------------
+Switch to main:
+
+    git switch main
+
+List files:
+
+    ls
+
+Expected files include:
+
+    program1.py
+
+Switch to GIT-EXAM:
+
+    git switch GIT-EXAM
+
+List files:
+
+    ls
+
+Expected files include:
+
+    program1.py
+    program2.py
+
+Compare the branch contents:
+
+    git diff main GIT-EXAM
+
+This should show program2.py as an added file in GIT-EXAM compared with main.
+
+Another useful command to compare commit histories:
+
+    git log --oneline --graph --all
+
+STEP 15 - FINAL VERIFICATION
+----------------------------
+Run these commands:
+
+    git branch
+    git status
+    git remote -v
+    git log --oneline --all
+    git diff main GIT-EXAM
+
+Confirm:
+1. main and GIT-EXAM branches exist.
+2. program1.py is present in main.
+3. program2.py is present in GIT-EXAM.
+4. Both branches have been pushed to GitHub.
+5. GitHub shows both branches.
+
+SCREENSHOTS / EVIDENCE TO SAVE
+------------------------------
+1. Git version output.
+2. git init output.
+3. GitHub repository page.
+4. program1.py code and execution output.
+5. First commit output.
+6. GitHub showing program1.py on main.
+7. git branch output showing GIT-EXAM.
+8. program2.py code and execution output.
+9. Second commit output.
+10. GitHub branch selector showing main and GIT-EXAM.
+11. File listing on main.
+12. File listing on GIT-EXAM.
+13. git diff main GIT-EXAM output.
+
+COMMON ERRORS AND FIXES
+-----------------------
+
+ERROR: git: command not found
+
+FIX:
+
+    sudo apt update
+    sudo apt install git -y
+
+ERROR: fatal: remote origin already exists
+
+FIX: Check the existing remote first:
+
+    git remote -v
+
+If it points to the wrong URL, update it:
+
+    git remote set-url origin YOUR-REPOSITORY-URL
+
+ERROR: Authentication failed
+
+FIX:
+Use GitHub's browser/device authentication prompt or a Personal Access
+Token for HTTPS. A normal GitHub account password is not accepted for
+Git HTTPS authentication.
+
+ERROR: src refspec main does not match any
+
+LIKELY REASON:
+There is no commit on the local branch yet.
+
+FIX:
+Stage and commit at least one file, then push:
+
+    git add program1.py
+    git commit -m "Add multiplication table program"
+    git branch -M main
+    git push -u origin main
+
+ERROR: code: command not found
+
+FIX:
+Use an installed text editor, such as:
+
+    nano program1.py
+
+Save in nano using Ctrl + O, Enter, then exit using Ctrl + X.
+
+VIVA QUESTIONS
+--------------
+
+Q1. What is Git?
+A. Git is a distributed version control system used to track changes
+   in files.
+
+Q2. What is GitHub?
+A. GitHub is an online platform for hosting Git repositories and
+   collaborating on projects.
+
+Q3. What is a repository?
+A. A repository is a project directory whose changes are tracked by Git.
+
+Q4. What does git init do?
+A. It initializes a Git repository in the current directory.
+
+Q5. What is the staging area?
+A. It is the area where selected changes are prepared before committing.
+
+Q6. What is a commit?
+A. A commit is a saved snapshot of staged changes in the local repository.
+
+Q7. What is a branch?
+A. A branch is an independent line of development in a repository.
+
+Q8. What is origin?
+A. Origin is the conventional name given to a remote repository.
+
+Q9. What does git push do?
+A. It uploads local commits to a remote repository.
+
+Q10. What does git switch -c GIT-EXAM do?
+A. It creates the GIT-EXAM branch and switches to it.
+
+Q11. What does git diff main GIT-EXAM do?
+A. It displays differences between the two branch tips.
+
+Q12. What is the difference between git add and git commit?
+A. git add stages changes; git commit saves the staged changes.
+
+QUICK REVISION - MAIN COMMANDS
+------------------------------
+Use these commands in order. Replace YOUR-REPOSITORY-URL.
+
+    mkdir DataScienceProject
+    cd DataScienceProject
+    git init
+
+    git remote add origin YOUR-REPOSITORY-URL
+
+    # Create and write program1.py before staging it.
+    git add program1.py
+    git commit -m "Add multiplication table program"
+
+    git branch -M main
+    git push -u origin main
+
+    git switch -c GIT-EXAM
+
+    # Create and write program2.py before staging it.
+    git add program2.py
+    git commit -m "Add greatest of two numbers program"
+    git push -u origin GIT-EXAM
+
+    git switch main
+    ls
+
+    git switch GIT-EXAM
+    ls
+
+    git diff main GIT-EXAM
+
+RESULT
+------
+Successfully created a local Git repository, connected it to GitHub,
+committed and pushed two Python programs using separate branches, and
+demonstrated the difference between main and GIT-EXAM.

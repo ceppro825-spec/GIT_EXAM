@@ -1,0 +1,310 @@
+PRACTICAL 5
+============================================================
+
+TITLE:
+Perform Git and GitHub operations using GitHub Desktop.
+Create files, commit changes, push them to GitHub, and
+demonstrate the use of .gitignore.
+
+------------------------------------------------------------
+1. AIM
+------------------------------------------------------------
+
+To perform basic Git and GitHub operations using GitHub
+Desktop GUI and understand how to ignore files using
+.gitignore.
+
+------------------------------------------------------------
+2. REQUIREMENTS
+------------------------------------------------------------
+
+1. GitHub account
+2. GitHub Desktop application
+3. Internet connection
+4. Text editor (Notepad / VS Code)
+5. Git installed
+
+------------------------------------------------------------
+3. CREATE A GITHUB REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open https://github.com
+
+STEP 2:
+Sign in to your GitHub account.
+
+STEP 3:
+Click the + icon and select New repository.
+
+STEP 4:
+Enter repository name:
+
+GitHub-Desktop-Practical
+
+STEP 5:
+Select Public.
+
+STEP 6:
+Select Add a README file.
+
+STEP 7:
+Click Create repository.
+
+------------------------------------------------------------
+4. OPEN GITHUB DESKTOP
+------------------------------------------------------------
+
+STEP 1:
+Launch GitHub Desktop.
+
+STEP 2:
+Sign in using your GitHub account.
+
+STEP 3:
+Click File -> Clone Repository.
+
+STEP 4:
+Select the repository:
+GitHub-Desktop-Practical
+
+STEP 5:
+Choose a local folder where the repository will be
+stored.
+
+STEP 6:
+Click Clone.
+
+The repository will now be available on your computer.
+
+------------------------------------------------------------
+5. CREATE THE REQUIRED FILES
+------------------------------------------------------------
+
+STEP 1:
+Open the cloned repository folder.
+
+STEP 2:
+Create a file named:
+
+palindrome.py
+
+Write the following code:
+
+num = input("Enter a number: ")
+
+if num == num[::-1]:
+    print("Palindrome")
+else:
+    print("Not a palindrome")
+
+
+STEP 3:
+Create another file named:
+
+program1.py
+
+Write the following code:
+
+for i in range(1, 11):
+    print(i, "Square =", i * i)
+
+
+STEP 4:
+Save both files.
+
+------------------------------------------------------------
+6. CREATE THE IGNORE DIRECTORY
+------------------------------------------------------------
+
+STEP 1:
+Inside the repository folder, create a directory named:
+
+IGNORE
+
+STEP 2:
+Inside IGNORE, create two text files:
+
+test1.txt
+test2.txt
+
+STEP 3:
+Write some sample text inside both files.
+
+Example:
+
+test1.txt:
+This is a test file 1.
+
+test2.txt:
+This is a test file 2.
+
+------------------------------------------------------------
+7. CREATE THE .gitignore FILE
+------------------------------------------------------------
+
+STEP 1:
+Inside the main repository folder, create a file named:
+
+.gitignore
+
+IMPORTANT:
+The filename must be exactly .gitignore.
+Do not give it a .txt extension.
+
+STEP 2:
+Write the following line inside it:
+
+IGNORE/
+
+STEP 3:
+Save the file.
+
+MEANING:
+
+IGNORE/ tells Git to ignore the entire IGNORE directory.
+
+Therefore, test1.txt and test2.txt will not be
+included in Git commits.
+
+------------------------------------------------------------
+8. CHECK CHANGES IN GITHUB DESKTOP
+------------------------------------------------------------
+
+STEP 1:
+Open GitHub Desktop.
+
+STEP 2:
+Select your repository.
+
+STEP 3:
+Open the Changes tab.
+
+STEP 4:
+You should see files such as:
+
+palindrome.py
+program1.py
+.gitignore
+
+The IGNORE directory should not appear as files to commit.
+
+STEP 5:
+Enter the summary:
+
+Added palindrome and square programs with gitignore.
+
+STEP 6:
+Click Commit to main.
+
+------------------------------------------------------------
+9. PUSH CHANGES TO GITHUB
+------------------------------------------------------------
+
+STEP 1:
+After committing, click Push origin.
+
+STEP 2:
+Wait for the push operation to complete.
+
+STEP 3:
+Open your repository on GitHub.com.
+
+STEP 4:
+Verify that these files are present:
+
+README.md
+palindrome.py
+program1.py
+.gitignore
+
+STEP 5:
+Verify that the IGNORE directory and its text files
+are not present.
+
+------------------------------------------------------------
+10. VERIFY IGNORED FILES
+------------------------------------------------------------
+
+Open the repository folder.
+
+Check that these files still exist locally:
+
+IGNORE/test1.txt
+IGNORE/test2.txt
+
+They exist on your computer but are not tracked or
+uploaded to GitHub.
+
+You can also open the .gitignore file on GitHub and
+verify that it contains:
+
+IGNORE/
+
+------------------------------------------------------------
+11. RESULT
+------------------------------------------------------------
+
+Successfully created a GitHub repository using
+GitHub Desktop, added Python programs, committed and
+pushed changes, and demonstrated the use of
+.gitignore to exclude a directory from Git tracking.
+
+------------------------------------------------------------
+12. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is Git?
+Ans: Git is a distributed version control system used
+to track changes in source code.
+
+Q2. What is GitHub?
+Ans: GitHub is an online platform for hosting Git
+repositories and collaborating on projects.
+
+Q3. What is GitHub Desktop?
+Ans: It is a graphical application used to perform
+Git operations without typing Git commands.
+
+Q4. What is a repository?
+Ans: A repository is a location where project files
+and their version history are stored.
+
+Q5. What is a commit?
+Ans: A commit is a saved snapshot of changes in a
+Git repository.
+
+Q6. What is Push?
+Ans: Push uploads local commits to a remote repository.
+
+Q7. What is Clone?
+Ans: Clone creates a local copy of a remote repository.
+
+Q8. What is .gitignore?
+Ans: It is a file that specifies files and directories
+that Git should ignore.
+
+Q9. Are ignored files deleted from the computer?
+Ans: No. They remain locally but are excluded from
+Git tracking if they have not already been tracked.
+
+Q10. What is the difference between Commit and Push?
+Ans: Commit saves changes locally, whereas Push sends
+committed changes to the remote repository.
+
+------------------------------------------------------------
+13. QUICK REVISION
+------------------------------------------------------------
+
+1. Create a GitHub repository.
+2. Clone it using GitHub Desktop.
+3. Create palindrome.py.
+4. Create program1.py.
+5. Create IGNORE directory.
+6. Add test1.txt and test2.txt.
+7. Create .gitignore.
+8. Add IGNORE/ inside .gitignore.
+9. Check the Changes tab.
+10. Commit changes.
+11. Push origin.
+12. Verify files on GitHub.

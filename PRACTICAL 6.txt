@@ -1,0 +1,482 @@
+PRACTICAL 6
+============================================================
+
+TITLE:
+Fork an AI Project Gallery repository, create a feature
+branch, make changes, and submit a Pull Request.
+
+------------------------------------------------------------
+1. AIM
+------------------------------------------------------------
+
+To clone an existing GitHub repository, understand
+repository permissions, fork the repository, create a
+feature branch, make changes, and submit a Pull Request.
+
+------------------------------------------------------------
+2. REQUIREMENTS
+------------------------------------------------------------
+
+1. Git installed
+2. GitHub account
+3. Ubuntu Terminal or Git Bash
+4. Internet connection
+5. Text editor
+
+------------------------------------------------------------
+3. UNDERSTAND IMPORTANT CONCEPTS
+------------------------------------------------------------
+
+ORIGINAL REPOSITORY:
+The repository owned by another developer.
+
+FORK:
+A personal copy of someone else's repository under
+your own GitHub account.
+
+CLONE:
+Downloading a repository from GitHub to your computer.
+
+BRANCH:
+An independent line of development inside a repository.
+
+FEATURE BRANCH:
+A branch created to implement a new feature or change.
+
+PULL REQUEST (PR):
+A request to merge changes from one branch or repository
+into another after review.
+
+UPSTREAM:
+The original repository from which your fork was created.
+
+------------------------------------------------------------
+4. CLONE THE ORIGINAL REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open Ubuntu Terminal.
+
+STEP 2:
+Create a working directory:
+
+mkdir Practical-6
+cd Practical-6
+
+STEP 3:
+Clone the original repository:
+
+git clone https://github.com/KalyanM45/AI-Project-Gallery.git
+
+STEP 4:
+Enter the repository:
+
+cd AI-Project-Gallery
+
+STEP 5:
+Check repository files:
+
+ls
+
+STEP 6:
+Check the current branch:
+
+git branch
+
+EXPECTED:
+main
+
+------------------------------------------------------------
+5. DEMONSTRATE RESTRICTED ACCESS
+------------------------------------------------------------
+
+The original repository belongs to another developer.
+
+You can download and view it, but you normally cannot
+push changes directly to it without write permission.
+
+IMPORTANT:
+Creating a local branch is possible even without
+permission to modify the original GitHub repository.
+
+The restriction is generally on pushing changes to
+the original remote repository.
+
+You can demonstrate this by checking the remote:
+
+git remote -v
+
+The original repository will appear as origin.
+
+Do not attempt to change or overwrite the original
+developer's files.
+
+------------------------------------------------------------
+6. FORK THE ORIGINAL REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open:
+
+https://github.com/KalyanM45/AI-Project-Gallery
+
+STEP 2:
+Sign in to your GitHub account.
+
+STEP 3:
+Click the Fork button in the upper-right corner.
+
+STEP 4:
+Select your GitHub account as the owner.
+
+STEP 5:
+Click Create fork.
+
+RESULT:
+A copy of AI-Project-Gallery will be created under
+your GitHub account.
+
+Example:
+
+Original:
+KalyanM45/AI-Project-Gallery
+
+Your fork:
+YOUR_USERNAME/AI-Project-Gallery
+
+------------------------------------------------------------
+7. CLONE YOUR FORK
+------------------------------------------------------------
+
+STEP 1:
+Open your fork on GitHub.
+
+STEP 2:
+Click the green Code button.
+
+STEP 3:
+Copy the HTTPS URL.
+
+STEP 4:
+Return to Terminal.
+
+Go one directory back:
+
+cd ..
+
+Clone your fork:
+
+git clone YOUR_FORK_URL
+
+Replace YOUR_FORK_URL with the URL copied from GitHub.
+
+STEP 5:
+Enter your forked repository:
+
+cd AI-Project-Gallery
+
+STEP 6:
+Check remote repositories:
+
+git remote -v
+
+Your fork should appear as origin.
+
+------------------------------------------------------------
+8. CREATE FEATURE BRANCH
+------------------------------------------------------------
+
+STEP 1:
+Create a branch named GIT-EXAM:
+
+git switch -c GIT-EXAM
+
+STEP 2:
+Verify the branch:
+
+git branch
+
+EXPECTED:
+
+* GIT-EXAM
+  main
+
+The * indicates the currently active branch.
+
+------------------------------------------------------------
+9. MAKE CHANGES IN THE REPOSITORY
+------------------------------------------------------------
+
+The original repository contains a README file.
+
+For this practical, create a new file.
+
+STEP 1:
+Create a file:
+
+touch contribution.txt
+
+STEP 2:
+Open it:
+
+nano contribution.txt
+
+STEP 3:
+Write:
+
+My contribution to the AI Project Gallery.
+
+This file demonstrates my changes in the GIT-EXAM branch.
+
+STEP 4:
+Save the file.
+
+In Nano:
+Press Ctrl + O, Enter, then Ctrl + X.
+
+STEP 5:
+Check the changes:
+
+git status
+
+You should see contribution.txt as an untracked file.
+
+------------------------------------------------------------
+10. COMMIT THE CHANGES
+------------------------------------------------------------
+
+STEP 1:
+Add the file:
+
+git add contribution.txt
+
+STEP 2:
+Commit the changes:
+
+git commit -m "Added contribution file"
+
+STEP 3:
+Verify commit history:
+
+git log --oneline
+
+------------------------------------------------------------
+11. PUSH FEATURE BRANCH TO YOUR FORK
+------------------------------------------------------------
+
+STEP 1:
+Push the branch:
+
+git push -u origin GIT-EXAM
+
+STEP 2:
+Open your fork on GitHub.
+
+STEP 3:
+Select the GIT-EXAM branch.
+
+STEP 4:
+Verify that contribution.txt is present.
+
+------------------------------------------------------------
+12. CREATE A PULL REQUEST
+------------------------------------------------------------
+
+STEP 1:
+Open the original repository:
+
+https://github.com/KalyanM45/AI-Project-Gallery
+
+STEP 2:
+Click Pull requests.
+
+STEP 3:
+Click New pull request.
+
+STEP 4:
+Click compare across forks if required.
+
+STEP 5:
+Select the following:
+
+BASE REPOSITORY:
+KalyanM45/AI-Project-Gallery
+
+BASE BRANCH:
+main
+
+HEAD REPOSITORY:
+YOUR_USERNAME/AI-Project-Gallery
+
+COMPARE BRANCH:
+GIT-EXAM
+
+STEP 6:
+Check the changes displayed.
+
+STEP 7:
+Enter the title:
+
+Added contribution file
+
+STEP 8:
+Enter the description:
+
+This pull request adds a contribution.txt file
+to demonstrate a contribution to the AI Project Gallery.
+
+STEP 9:
+Click Create pull request.
+
+RESULT:
+Your Pull Request will be submitted for review.
+
+------------------------------------------------------------
+13. REVIEW AND MERGE CONFLICTS
+------------------------------------------------------------
+
+A merge conflict occurs when Git cannot automatically
+combine changes made to the same part of a file.
+
+For example, two developers modify the same line
+differently.
+
+If a conflict occurs:
+
+STEP 1:
+Open the conflicted file.
+
+STEP 2:
+Look for conflict markers:
+
+<<<<<<< HEAD
+Your version
+=======
+Other version
+>>>>>>> branch-name
+
+STEP 3:
+Decide which changes should be retained.
+
+STEP 4:
+Remove all conflict markers.
+
+STEP 5:
+Save the file.
+
+STEP 6:
+Stage the resolved file:
+
+git add filename
+
+STEP 7:
+Commit the resolution:
+
+git commit -m "Resolved merge conflict"
+
+STEP 8:
+Push the updated branch:
+
+git push
+
+IMPORTANT:
+A conflict may not occur naturally during this
+practical. Do not claim that you resolved one if
+GitHub shows no conflict.
+
+------------------------------------------------------------
+14. RESULT
+------------------------------------------------------------
+
+Successfully cloned and forked an existing GitHub
+repository, created a feature branch, made changes,
+pushed the changes to the fork, and submitted a
+Pull Request for review.
+
+------------------------------------------------------------
+15. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is Fork?
+Ans: Fork creates a personal copy of another user's
+repository under your GitHub account.
+
+Q2. What is Clone?
+Ans: Clone downloads a remote repository to the
+local computer.
+
+Q3. What is the difference between Fork and Clone?
+Ans: Fork creates a copy on GitHub, whereas Clone
+creates a local copy on your computer.
+
+Q4. What is a branch?
+Ans: A branch is an independent line of development.
+
+Q5. What is a Pull Request?
+Ans: A Pull Request proposes changes for review
+and merging into another branch or repository.
+
+Q6. What is upstream?
+Ans: Upstream refers to the original repository
+from which a fork was created.
+
+Q7. What is origin?
+Ans: Origin is the default name commonly given
+to the remote repository from which a local
+repository was cloned.
+
+Q8. What is a merge conflict?
+Ans: A merge conflict occurs when Git cannot
+automatically combine competing changes.
+
+Q9. Can we push directly to someone else's repository?
+Ans: Only if we have the required write permission.
+
+Q10. Why do we create a feature branch?
+Ans: To develop changes separately without
+directly modifying the main branch.
+
+------------------------------------------------------------
+16. QUICK REVISION
+------------------------------------------------------------
+
+1. Clone the original repository.
+2. Understand write permission restrictions.
+3. Fork the repository on GitHub.
+4. Clone your fork.
+5. Create GIT-EXAM branch.
+6. Add contribution.txt.
+7. Commit changes.
+8. Push GIT-EXAM to your fork.
+9. Open the original repository.
+10. Create Pull Request from your fork to original main.
+11. Review changes and resolve conflicts if present.
+
+Understand these three things before the practical
+1. Fork vs Clone
+Original GitHub repository
+
+
+Fork → Your GitHub account
+Creates your own online copy.
+
+Clone → Your computer
+Downloads your fork locally.
+
+
+2. What does a Pull Request do?
+Your fork
+
+GIT-EXAM
+
+Original repo
+
+main
+
+
+A PR asks the original repository owner to review and potentially merge your changes.
+
+3. Why can't you push to the original repository?
+
+You generally don't have write permission. Forking gives you a repository where you have permission to push your own changes. 
+GitHub+1

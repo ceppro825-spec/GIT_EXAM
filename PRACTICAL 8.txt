@@ -1,0 +1,766 @@
+PRACTICAL 8
+============================================================
+
+TITLE:
+Create and Configure a CI/CD Pipeline Using Jenkins.
+
+------------------------------------------------------------
+1. AIM
+------------------------------------------------------------
+
+To create a GitHub repository, install and configure
+Jenkins, create a Pipeline job, connect it with GitHub
+using a Jenkinsfile, and automatically trigger builds
+whenever changes are pushed to GitHub.
+
+------------------------------------------------------------
+2. REQUIREMENTS
+------------------------------------------------------------
+
+1. Ubuntu operating system
+2. Internet connection
+3. Git
+4. Java 21 or later
+5. Jenkins
+6. GitHub account
+7. Web browser
+8. Text editor
+
+------------------------------------------------------------
+3. INTRODUCTION
+------------------------------------------------------------
+
+JENKINS:
+Jenkins is an open-source automation server used to
+automate building, testing, and deploying applications.
+
+CI (CONTINUOUS INTEGRATION):
+Continuous Integration is the practice of frequently
+integrating code changes into a shared repository and
+automatically testing them.
+
+CD (CONTINUOUS DELIVERY/DEPLOYMENT):
+It automates the process of preparing or releasing
+software.
+
+JENKINSFILE:
+A Jenkinsfile is a text file containing instructions
+that define a Jenkins Pipeline.
+
+PIPELINE:
+A sequence of automated stages used to build, test,
+and deploy an application.
+
+------------------------------------------------------------
+4. INSTALL PREREQUISITES
+------------------------------------------------------------
+
+STEP 1: Update Ubuntu packages.
+
+Command:
+
+sudo apt update
+
+STEP 2: Install Java and Git.
+
+Command:
+
+sudo apt install fontconfig openjdk-21-jre git curl -y
+
+STEP 3: Verify Java installation.
+
+Command:
+
+java -version
+
+STEP 4: Verify Git installation.
+
+Command:
+
+git --version
+
+------------------------------------------------------------
+5. INSTALL JENKINS
+------------------------------------------------------------
+
+STEP 1: Create a directory for the Jenkins key.
+
+Command:
+
+sudo mkdir -p /usr/share/keyrings
+
+STEP 2: Download the Jenkins signing key.
+
+Command:
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+STEP 3: Add the Jenkins repository.
+
+Command:
+
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+STEP 4: Update package information.
+
+Command:
+
+sudo apt update
+
+STEP 5: Install Jenkins.
+
+Command:
+
+sudo apt install jenkins -y
+
+------------------------------------------------------------
+6. START JENKINS SERVICE
+------------------------------------------------------------
+
+STEP 1: Enable Jenkins.
+
+Command:
+
+sudo systemctl enable jenkins
+
+STEP 2: Start Jenkins.
+
+Command:
+
+sudo systemctl start jenkins
+
+STEP 3: Check Jenkins status.
+
+Command:
+
+sudo systemctl status jenkins
+
+EXPECTED OUTPUT:
+
+Active: active (running)
+
+Press q to exit the status screen.
+
+------------------------------------------------------------
+7. OPEN JENKINS
+------------------------------------------------------------
+
+STEP 1:
+Open your web browser.
+
+STEP 2:
+Enter the following URL:
+
+http://localhost:8080
+
+STEP 3:
+Jenkins will ask for the initial administrator
+password.
+
+STEP 4:
+Open another Terminal window.
+
+STEP 5:
+Execute:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+STEP 6:
+Copy the displayed password.
+
+STEP 7:
+Paste it into the Jenkins browser page.
+
+STEP 8:
+Click Continue.
+
+STEP 9:
+Select Install suggested plugins.
+
+STEP 10:
+Wait for the installation to complete.
+
+STEP 11:
+Create your administrator account.
+
+STEP 12:
+Click Save and Finish.
+
+STEP 13:
+Click Start using Jenkins.
+
+The Jenkins Dashboard will appear.
+
+------------------------------------------------------------
+8. INSTALL REQUIRED PLUGINS
+------------------------------------------------------------
+
+The following plugins are required:
+
+1. Git
+2. GitHub
+3. Pipeline
+
+STEPS:
+
+STEP 1:
+Open Manage Jenkins.
+
+STEP 2:
+Click Plugins or Manage Plugins.
+
+STEP 3:
+Open Available plugins.
+
+STEP 4:
+Search for Git.
+
+STEP 5:
+Select the Git plugin.
+
+STEP 6:
+Search for GitHub.
+
+STEP 7:
+Select the GitHub plugin.
+
+STEP 8:
+Search for Pipeline.
+
+STEP 9:
+Select the Pipeline plugin.
+
+STEP 10:
+Click Install.
+
+NOTE:
+Some plugins may already be installed through the
+suggested plugin installation. Do not install them
+again if they are already installed.
+
+------------------------------------------------------------
+9. CREATE A GITHUB REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open:
+
+https://github.com
+
+STEP 2:
+Sign in to your GitHub account.
+
+STEP 3:
+Click the + icon.
+
+STEP 4:
+Select New repository.
+
+STEP 5:
+Enter repository name:
+
+jenkins-ci-practical
+
+STEP 6:
+Select Public.
+
+STEP 7:
+Leave README initialization unchecked.
+
+STEP 8:
+Click Create repository.
+
+STEP 9:
+Copy the HTTPS repository URL.
+
+Example:
+
+https://github.com/YOUR_USERNAME/jenkins-ci-practical.git
+
+Replace YOUR_USERNAME with your GitHub username.
+
+------------------------------------------------------------
+10. CREATE PROJECT FILES
+------------------------------------------------------------
+
+STEP 1:
+Open Ubuntu Terminal.
+
+STEP 2:
+Create a project directory.
+
+Command:
+
+mkdir jenkins-ci-practical
+
+STEP 3:
+Enter the directory.
+
+Command:
+
+cd jenkins-ci-practical
+
+STEP 4:
+Create app.py.
+
+Command:
+
+nano app.py
+
+Write the following code:
+
+print("Hello! Jenkins CI/CD practical is running.")
+
+Save using:
+
+Ctrl + O
+Enter
+Ctrl + X
+
+STEP 5:
+Create Jenkinsfile.
+
+Command:
+
+nano Jenkinsfile
+
+Write the following code:
+
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing the project...'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deployment completed successfully!'
+            }
+        }
+    }
+}
+
+Save the file.
+
+------------------------------------------------------------
+11. UNDERSTAND JENKINSFILE
+------------------------------------------------------------
+
+pipeline:
+Defines the Jenkins Pipeline.
+
+agent any:
+Allows the pipeline to run on any available agent.
+
+stages:
+Contains all stages of the pipeline.
+
+stage:
+Defines an individual stage.
+
+steps:
+Contains the instructions to execute.
+
+echo:
+Displays a message in the Jenkins console output.
+
+The pipeline contains three stages:
+
+1. Build
+2. Test
+3. Deploy
+
+------------------------------------------------------------
+12. PUSH PROJECT TO GITHUB
+------------------------------------------------------------
+
+STEP 1:
+Initialize Git.
+
+Command:
+
+git init -b main
+
+STEP 2:
+Add all project files.
+
+Command:
+
+git add .
+
+STEP 3:
+Commit the changes.
+
+Command:
+
+git commit -m "Initial Jenkins CI project"
+
+STEP 4:
+Connect the local repository to GitHub.
+
+Command:
+
+git remote add origin https://github.com/YOUR_USERNAME/jenkins-ci-practical.git
+
+Replace YOUR_USERNAME with your GitHub username.
+
+STEP 5:
+Push the project.
+
+Command:
+
+git push -u origin main
+
+STEP 6:
+Open your GitHub repository.
+
+STEP 7:
+Verify that the following files are present:
+
+app.py
+Jenkinsfile
+
+------------------------------------------------------------
+13. CREATE A PIPELINE JOB IN JENKINS
+------------------------------------------------------------
+
+STEP 1:
+Open Jenkins Dashboard.
+
+STEP 2:
+Click New Item.
+
+STEP 3:
+Enter the job name:
+
+AI-Project-Pipeline
+
+STEP 4:
+Select Pipeline.
+
+STEP 5:
+Click OK.
+
+A new Pipeline configuration page will appear.
+
+------------------------------------------------------------
+14. CONFIGURE PIPELINE SCRIPT FROM SCM
+------------------------------------------------------------
+
+SCM means Source Code Management.
+
+Jenkins will retrieve the Jenkinsfile directly
+from the GitHub repository.
+
+STEPS:
+
+STEP 1:
+Scroll down to the Pipeline section.
+
+STEP 2:
+Find the Definition option.
+
+STEP 3:
+Select:
+
+Pipeline script from SCM
+
+STEP 4:
+Select SCM:
+
+Git
+
+STEP 5:
+Enter Repository URL:
+
+https://github.com/YOUR_USERNAME/jenkins-ci-practical.git
+
+STEP 6:
+For Credentials, select None if the repository
+is public and accessible without authentication.
+
+STEP 7:
+Enter Branch Specifier:
+
+*/main
+
+STEP 8:
+Enter Script Path:
+
+Jenkinsfile
+
+STEP 9:
+Click Save.
+
+------------------------------------------------------------
+15. RUN THE FIRST BUILD
+------------------------------------------------------------
+
+STEP 1:
+Open the AI-Project-Pipeline job.
+
+STEP 2:
+Click Build Now.
+
+STEP 3:
+Wait for the build to complete.
+
+STEP 4:
+Open the build number.
+
+STEP 5:
+Click Console Output.
+
+EXPECTED OUTPUT:
+
+Building the project...
+Testing the project...
+Deployment completed successfully!
+
+Finished: SUCCESS
+
+The pipeline has successfully executed all stages.
+
+------------------------------------------------------------
+16. CONFIGURE AUTOMATIC BUILD USING POLL SCM
+------------------------------------------------------------
+
+Poll SCM periodically checks the GitHub repository
+for new changes.
+
+STEPS:
+
+STEP 1:
+Open the AI-Project-Pipeline job.
+
+STEP 2:
+Click Configure.
+
+STEP 3:
+Find the Build Triggers section.
+
+STEP 4:
+Select Poll SCM.
+
+STEP 5:
+Enter the following schedule:
+
+H/2 * * * *
+
+This makes Jenkins check for changes approximately
+every two minutes.
+
+STEP 6:
+Click Save.
+
+------------------------------------------------------------
+17. TEST AUTOMATIC BUILD TRIGGERING
+------------------------------------------------------------
+
+STEP 1:
+Open the project folder in Terminal.
+
+STEP 2:
+Modify app.py.
+
+Command:
+
+nano app.py
+
+Replace its contents with:
+
+print("Hello! Jenkins automatic build is working.")
+
+Save the file.
+
+STEP 3:
+Add the changes.
+
+Command:
+
+git add .
+
+STEP 4:
+Commit the changes.
+
+Command:
+
+git commit -m "Updated application message"
+
+STEP 5:
+Push changes to GitHub.
+
+Command:
+
+git push origin main
+
+STEP 6:
+Wait for Jenkins to perform its next Poll SCM check.
+
+STEP 7:
+Open Jenkins Dashboard.
+
+STEP 8:
+Open AI-Project-Pipeline.
+
+STEP 9:
+Check Build History.
+
+STEP 10:
+Open the latest build.
+
+STEP 11:
+Click Console Output.
+
+Verify that the new build has been triggered.
+
+NOTE:
+Poll SCM is periodic, not instantaneous.
+Wait for the next scheduled check.
+
+------------------------------------------------------------
+18. RESULT
+------------------------------------------------------------
+
+Successfully installed Jenkins, configured the
+required plugins, created a GitHub repository,
+configured a Jenkins Pipeline using a Jenkinsfile,
+and demonstrated automatic build triggering
+using Poll SCM.
+
+------------------------------------------------------------
+19. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is Jenkins?
+
+Ans:
+Jenkins is an open-source automation server used
+to automate software development tasks.
+
+Q2. What is CI?
+
+Ans:
+Continuous Integration is the practice of frequently
+integrating code changes and automatically validating
+them.
+
+Q3. What is CD?
+
+Ans:
+Continuous Delivery or Continuous Deployment automates
+the process of preparing or releasing software.
+
+Q4. What is a Jenkins Pipeline?
+
+Ans:
+It is a sequence of automated stages used to build,
+test, and deploy an application.
+
+Q5. What is Jenkinsfile?
+
+Ans:
+A text file that defines the Jenkins Pipeline.
+
+Q6. What is SCM?
+
+Ans:
+SCM stands for Source Code Management.
+
+Q7. What is Poll SCM?
+
+Ans:
+It periodically checks the remote repository for
+new code changes.
+
+Q8. What is a webhook?
+
+Ans:
+A webhook sends an event notification from GitHub
+to Jenkins when a configured event occurs.
+
+Q9. What is the default Jenkins port?
+
+Ans:
+8080.
+
+Q10. What is Console Output?
+
+Ans:
+It displays the logs generated during a Jenkins build.
+
+Q11. What is agent any?
+
+Ans:
+It allows a pipeline to execute on any available
+Jenkins agent.
+
+Q12. What is the difference between Poll SCM and Webhook?
+
+Ans:
+Poll SCM periodically checks for changes, whereas
+a webhook sends a notification when an event occurs.
+
+------------------------------------------------------------
+20. QUICK REVISION
+------------------------------------------------------------
+
+1. Install Java and Git.
+2. Install Jenkins.
+3. Start Jenkins service.
+4. Open localhost:8080.
+5. Unlock Jenkins.
+6. Install required plugins.
+7. Create GitHub repository.
+8. Create app.py.
+9. Create Jenkinsfile.
+10. Push files to GitHub.
+11. Create Pipeline job.
+12. Select Pipeline script from SCM.
+13. Enter GitHub repository URL.
+14. Set branch to */main.
+15. Set script path to Jenkinsfile.
+16. Run Build Now.
+17. Configure Poll SCM.
+18. Push a new code change.
+19. Verify automatic build triggering.
+
+------------------------------------------------------------
+21. IMPORTANT COMMANDS
+------------------------------------------------------------
+
+Check Java:
+java -version
+
+Check Git:
+git --version
+
+Start Jenkins:
+sudo systemctl start jenkins
+
+Stop Jenkins:
+sudo systemctl stop jenkins
+
+Check Jenkins status:
+sudo systemctl status jenkins
+
+Unlock Jenkins:
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+Open Jenkins:
+http://localhost:8080
+
+------------------------------------------------------------
+END OF PRACTICAL 8
+============================================================

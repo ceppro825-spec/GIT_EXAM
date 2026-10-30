@@ -1,0 +1,424 @@
+PRACTICAL 7
+============================================================
+
+TITLE:
+Fork Spam Email Detection repository using GitHub Desktop,
+create a feature branch, make changes, and submit a Pull
+Request for review.
+
+------------------------------------------------------------
+1. AIM
+------------------------------------------------------------
+
+To clone an existing GitHub repository, fork it, create
+a feature branch, make code changes, and submit a Pull
+Request for review using GitHub Desktop.
+
+------------------------------------------------------------
+2. REQUIREMENTS
+------------------------------------------------------------
+
+1. GitHub account
+2. GitHub Desktop
+3. Internet connection
+4. Git installed
+5. Text editor
+
+------------------------------------------------------------
+3. ORIGINAL REPOSITORY
+------------------------------------------------------------
+
+Repository URL:
+
+https://github.com/KalyanM45/Spam-Email-Detection
+
+This repository belongs to another GitHub user.
+
+------------------------------------------------------------
+4. CLONE THE ORIGINAL REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open GitHub Desktop.
+
+STEP 2:
+Sign in to your GitHub account.
+
+STEP 3:
+Click File -> Clone Repository.
+
+STEP 4:
+Select the URL tab.
+
+STEP 5:
+Paste the repository URL:
+
+https://github.com/KalyanM45/Spam-Email-Detection
+
+STEP 6:
+Select a local directory.
+
+STEP 7:
+Click Clone.
+
+The repository will be downloaded to your computer.
+
+------------------------------------------------------------
+5. DEMONSTRATE RESTRICTED ACCESS
+------------------------------------------------------------
+
+STEP 1:
+Open the cloned repository in GitHub Desktop.
+
+STEP 2:
+Try creating a new branch using:
+
+Current Branch -> New Branch
+
+STEP 3:
+Enter a branch name:
+
+GIT-EXAM
+
+STEP 4:
+You may create a local branch, but you generally
+cannot publish changes to the original repository
+without write permission.
+
+IMPORTANT:
+Branch creation locally and permission to push to
+the original GitHub repository are different things.
+
+The restriction is normally on pushing to the
+original repository.
+
+------------------------------------------------------------
+6. FORK THE REPOSITORY
+------------------------------------------------------------
+
+STEP 1:
+Open the original repository on GitHub:
+
+https://github.com/KalyanM45/Spam-Email-Detection
+
+STEP 2:
+Sign in to your GitHub account.
+
+STEP 3:
+Click the Fork button.
+
+STEP 4:
+Select your GitHub account.
+
+STEP 5:
+Click Create fork.
+
+RESULT:
+A copy of the repository will be created under
+your GitHub account.
+
+------------------------------------------------------------
+7. CLONE YOUR FORK USING GITHUB DESKTOP
+------------------------------------------------------------
+
+STEP 1:
+Open your fork on GitHub.
+
+STEP 2:
+Click the Code button.
+
+STEP 3:
+Copy the HTTPS URL.
+
+STEP 4:
+Open GitHub Desktop.
+
+STEP 5:
+Click File -> Clone Repository.
+
+STEP 6:
+Paste your fork URL.
+
+STEP 7:
+Select the local directory.
+
+STEP 8:
+Click Clone.
+
+Now you are working with your own copy.
+
+------------------------------------------------------------
+8. CREATE A FEATURE BRANCH
+------------------------------------------------------------
+
+STEP 1:
+Open the forked repository in GitHub Desktop.
+
+STEP 2:
+Click Current Branch.
+
+STEP 3:
+Click New Branch.
+
+STEP 4:
+Enter:
+
+GIT-EXAM
+
+STEP 5:
+Click Create Branch.
+
+STEP 6:
+Click Publish branch.
+
+The feature branch is now available on your fork.
+
+------------------------------------------------------------
+9. MAKE CHANGES IN THE PROJECT
+------------------------------------------------------------
+
+STEP 1:
+Open the local repository folder.
+
+STEP 2:
+Create a new file:
+
+contribution.txt
+
+STEP 3:
+Write the following content:
+
+Contribution to Spam Email Detection Project.
+
+This file demonstrates a contribution made
+using the GIT-EXAM feature branch.
+
+STEP 4:
+Save the file.
+
+STEP 5:
+Return to GitHub Desktop.
+
+STEP 6:
+Open the Changes tab.
+
+Verify that contribution.txt is displayed.
+
+------------------------------------------------------------
+10. COMMIT THE CHANGES
+------------------------------------------------------------
+
+STEP 1:
+In GitHub Desktop, open the Changes tab.
+
+STEP 2:
+Enter the summary:
+
+Added contribution file
+
+STEP 3:
+Click Commit to GIT-EXAM.
+
+STEP 4:
+Click Push origin.
+
+Your changes will be uploaded to your fork.
+
+------------------------------------------------------------
+11. CREATE A PULL REQUEST
+------------------------------------------------------------
+
+STEP 1:
+Open your fork on GitHub.
+
+STEP 2:
+Click the Pull requests tab.
+
+STEP 3:
+Click New pull request.
+
+STEP 4:
+Select compare across forks if required.
+
+STEP 5:
+Select:
+
+BASE REPOSITORY:
+KalyanM45/Spam-Email-Detection
+
+BASE BRANCH:
+main
+
+HEAD REPOSITORY:
+YOUR_USERNAME/Spam-Email-Detection
+
+COMPARE BRANCH:
+GIT-EXAM
+
+STEP 6:
+Review the displayed changes.
+
+STEP 7:
+Enter the title:
+
+Added contribution file
+
+STEP 8:
+Enter the description:
+
+This Pull Request adds a contribution.txt file
+to demonstrate changes in the Spam Email Detection
+repository.
+
+STEP 9:
+Click Create pull request.
+
+------------------------------------------------------------
+12. REVIEW AND RESOLVE CONFLICTS
+------------------------------------------------------------
+
+A merge conflict occurs when Git cannot automatically
+combine changes made to the same part of a file.
+
+If a conflict occurs:
+
+STEP 1:
+Open the conflicted file in your editor.
+
+STEP 2:
+Find the conflict markers.
+
+<<<<<<< HEAD
+First version
+=======
+Second version
+>>>>>>> branch-name
+
+STEP 3:
+Choose the correct content.
+
+STEP 4:
+Remove all conflict markers.
+
+STEP 5:
+Save the file.
+
+STEP 6:
+Return to GitHub Desktop.
+
+STEP 7:
+Stage the resolved changes.
+
+STEP 8:
+Enter commit message:
+
+Resolved merge conflict
+
+STEP 9:
+Commit the changes.
+
+STEP 10:
+Click Push origin.
+
+The Pull Request will be updated automatically.
+
+------------------------------------------------------------
+13. INCORPORATE REVIEW FEEDBACK
+------------------------------------------------------------
+
+If the reviewer requests changes:
+
+STEP 1:
+Read the review comments on GitHub.
+
+STEP 2:
+Open the requested file locally.
+
+STEP 3:
+Make the necessary changes.
+
+STEP 4:
+Save the file.
+
+STEP 5:
+Open GitHub Desktop.
+
+STEP 6:
+Commit the updated changes.
+
+STEP 7:
+Push origin.
+
+The existing Pull Request will automatically
+show the new commit.
+
+NOTE:
+A conflict or review request may not occur naturally.
+Demonstrate the process if required, but do not claim
+that a conflict was resolved if none occurred.
+
+------------------------------------------------------------
+14. RESULT
+------------------------------------------------------------
+
+Successfully cloned and forked the Spam Email Detection
+repository, created a GIT-EXAM feature branch, made
+changes, committed and pushed the changes, and submitted
+a Pull Request for review using GitHub Desktop.
+
+------------------------------------------------------------
+15. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is GitHub Desktop?
+Ans: A graphical application for performing Git
+operations without using terminal commands.
+
+Q2. What is Fork?
+Ans: A personal copy of another user's repository.
+
+Q3. What is Clone?
+Ans: Downloading a repository to the local computer.
+
+Q4. What is a feature branch?
+Ans: A separate branch used to develop a feature
+without directly modifying the main branch.
+
+Q5. What is a Pull Request?
+Ans: A request to review and merge changes into
+another repository or branch.
+
+Q6. Why do we fork a repository?
+Ans: To contribute changes when we do not have
+direct write access to the original repository.
+
+Q7. What is a merge conflict?
+Ans: A situation where Git cannot automatically
+combine competing changes.
+
+Q8. What is Commit?
+Ans: Saving a snapshot of changes in Git history.
+
+Q9. What is Push?
+Ans: Uploading local commits to a remote repository.
+
+Q10. What is the difference between origin and upstream?
+Ans: Origin generally refers to your fork, while
+upstream refers to the original repository.
+
+------------------------------------------------------------
+16. QUICK REVISION
+------------------------------------------------------------
+
+1. Open GitHub Desktop.
+2. Clone the original repository.
+3. Demonstrate restricted push access.
+4. Fork the repository.
+5. Clone your fork.
+6. Create GIT-EXAM branch.
+7. Add contribution.txt.
+8. Commit changes.
+9. Push origin.
+10. Create Pull Request to original main.
+11. Review changes.
+12. Resolve conflicts or incorporate feedback if required.

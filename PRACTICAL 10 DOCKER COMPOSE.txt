@@ -1,0 +1,1440 @@
+============================================================
+PRACTICAL 10: DOCKER COMPOSE
+============================================================
+
+AIM:
+To develop and deploy a multi-container AI application using
+Docker Compose by creating separate frontend, backend, and
+database services.
+
+------------------------------------------------------------
+1. UNDERSTANDING THE CONCEPTS
+------------------------------------------------------------
+
+What is Docker Compose?
+
+Docker Compose is a tool used to define and manage multiple
+Docker containers using a single YAML configuration file.
+
+Why do we need Docker Compose?
+
+In Practical 9, we ran one container manually.
+
+In this practical, our application contains three services:
+
+1. FRONTEND
+   Displays the website to the user.
+
+2. BACKEND
+   Processes user input and predicts the Iris flower category
+   using a machine learning model.
+
+3. DATABASE
+   Stores the prediction history.
+
+Docker Compose starts and manages all three services together.
+
+What is a YAML file?
+
+YAML is a human-readable format used for configuration.
+
+Docker Compose uses a file named:
+
+compose.yaml
+
+What is a service?
+
+A service represents a container configuration in Docker Compose.
+
+What is a volume?
+
+A volume stores data persistently, even if a container is removed.
+
+What is a Docker network?
+
+A network allows containers to communicate with each other.
+
+
+------------------------------------------------------------
+2. UNDERSTANDING THE APPLICATION ARCHITECTURE
+------------------------------------------------------------
+
+Our application will work as follows:
+
+USER
+ |
+ |
+ v
+FRONTEND
+(Nginx + HTML + CSS + JavaScript)
+ |
+ |
+ v
+BACKEND
+(Flask + Machine Learning Model)
+ |
+ |
+ v
+DATABASE
+(PostgreSQL)
+
+The frontend sends flower measurements to the backend.
+
+The backend predicts the flower category.
+
+The backend stores the measurements and prediction in
+the PostgreSQL database.
+
+The prediction is returned to the frontend and displayed
+to the user.
+
+
+------------------------------------------------------------
+3. CHECK DOCKER AND DOCKER COMPOSE
+------------------------------------------------------------
+
+Open Ubuntu Terminal.
+
+Check Docker:
+
+docker --version
+
+Check Docker Compose:
+
+docker compose version
+
+If Docker Compose is unavailable, install the Docker Compose
+plugin using the Docker installation instructions from
+Practical 9.
+
+Verify Docker is running:
+
+sudo systemctl status docker
+
+NOTE:
+Use sudo before Docker commands if your user does not have
+permission to access the Docker daemon.
+
+
+------------------------------------------------------------
+4. CREATE PROJECT DIRECTORY
+------------------------------------------------------------
+
+Create the main directory:
+
+mkdir -p ~/DevOps-Practical-Exam/Practical-10-Docker-Compose
+
+Enter the directory:
+
+cd ~/DevOps-Practical-Exam/Practical-10-Docker-Compose
+
+Create the following folder structure:
+
+Practical-10-Docker-Compose/
+|
+|---- backend/
+|     |
+|     |---- app.py
+|     |---- requirements.txt
+|     |---- Dockerfile
+|
+|---- frontend/
+|     |
+|     |---- index.html
+|     |---- nginx.conf
+|     |---- Dockerfile
+|
+|---- compose.yaml
+
+
+------------------------------------------------------------
+5. CREATE THE BACKEND APPLICATION
+------------------------------------------------------------
+
+Step 1: Create backend directory.
+
+mkdir backend
+
+Step 2: Enter backend directory.
+
+cd backend
+
+Step 3: Create app.py.
+
+nano app.py
+
+Step 4: Add the following code.
+
+----------------------------------------
+FILE: backend/app.py
+----------------------------------------
+
+from flask import Flask, request, jsonify
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+import psycopg2
+import os
+import time
+
+app = Flask(__name__)
+
+# Load Iris dataset
+iris = load_iris()
+
+# Train machine learning model
+model = RandomForestClassifier(random_state=42)
+model.fit(iris.data, iris.target)
+
+
+# Database connection
+def get_db_connection():
+
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "db"),
+        database=os.getenv("DB_NAME", "irisdb"),
+        user=os.getenv("DB_USER", "admin"),
+        password=os.getenv("DB_PASSWORD", "admin123"),
+        port=5432
+    )
+
+
+# Wait for database and create table
+def initialize_database():
+
+    for attempt in range(15):
+
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS predictions (
+                    id SERIAL PRIMARY KEY,
+                    sepal_length FLOAT,
+                    sepal_width FLOAT,
+                    petal_length FLOAT,
+                    petal_width FLOAT,
+                    prediction VARCHAR(50)
+                )
+            """)
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+            print("Database connected successfully")
+            return
+
+        except psycopg2.OperationalError:
+            print("Waiting for database...")
+            time.sleep(2)
+
+    raise RuntimeError("Could not connect to database")
+
+
+# Home route
+@app.route("/")
+def home():
+    return "Iris AI Backend is Running!"
+
+
+# Health route
+@app.route("/health")
+def health():
+    return jsonify({"status": "healthy"})
+
+
+# Prediction route
+@app.route("/predict", methods=["POST"])
+def predict():
+
+    try:
+        data = request.get_json()
+
+        values = [
+            float(data["sepal_length"]),
+            float(data["sepal_width"]),
+            float(data["petal_length"]),
+            float(data["petal_width"])
+        ]
+
+        result = model.predict([values])[0]
+        flower_name = iris.target_names[result]
+
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            INSERT INTO predictions
+            (sepal_length, sepal_width, petal_length,
+             petal_width, prediction)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            values[0],
+            values[1],
+            values[2],
+            values[3],
+            flower_name
+        ))
+
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "prediction": flower_name,
+            "message": "Prediction saved successfully"
+        })
+
+    except (ValueError, KeyError, TypeError) as error:
+
+        return jsonify({"error": str(error)}), 400
+
+    except psycopg2.Error as error:
+
+        return jsonify({"error": "Database operation failed"}), 500
+
+
+# Start application
+if __name__ == "__main__":
+
+    initialize_database()
+
+    app.run(
+        host="0.0.0.0",
+        port=5000
+    )
+
+----------------------------------------
+
+Step 5: Save the file.
+
+CTRL + O
+Enter
+CTRL + X
+
+EXPLANATION:
+
+Flask:
+Creates the backend web application.
+
+Scikit-learn:
+Provides the machine learning model.
+
+PostgreSQL:
+Stores prediction history.
+
+psycopg2:
+Allows Python to communicate with PostgreSQL.
+
+The /predict route:
+Receives measurements, predicts the flower category,
+and saves the result in the database.
+
+The /health route:
+Checks whether the backend is running.
+
+
+------------------------------------------------------------
+6. CREATE BACKEND REQUIREMENTS
+------------------------------------------------------------
+
+Create the file:
+
+nano requirements.txt
+
+Add:
+
+----------------------------------------
+FILE: backend/requirements.txt
+----------------------------------------
+
+Flask
+scikit-learn
+psycopg2-binary
+
+----------------------------------------
+
+Save the file.
+
+Explanation:
+
+Flask:
+Creates the backend API.
+
+Scikit-learn:
+Provides the Iris machine learning model.
+
+psycopg2-binary:
+Connects Python to PostgreSQL.
+
+
+------------------------------------------------------------
+7. CREATE BACKEND DOCKERFILE
+------------------------------------------------------------
+
+Create:
+
+nano Dockerfile
+
+Add:
+
+----------------------------------------
+FILE: backend/Dockerfile
+----------------------------------------
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+
+----------------------------------------
+
+Save the file.
+
+This Dockerfile creates an image for the Flask backend.
+
+
+------------------------------------------------------------
+8. CREATE THE FRONTEND APPLICATION
+------------------------------------------------------------
+
+Go back to the main project directory:
+
+cd ..
+
+Enter the frontend directory:
+
+mkdir frontend
+
+cd frontend
+
+Create index.html:
+
+nano index.html
+
+Add the following code:
+
+----------------------------------------
+FILE: frontend/index.html
+----------------------------------------
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Iris AI Predictor</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            background: #f1f5f9;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            max-width: 450px;
+            margin: auto;
+            border-radius: 12px;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 8px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Iris Flower Predictor</h2>
+
+        <form id="predictionForm">
+
+            <input type="number" step="any"
+            id="sepal_length" placeholder="Sepal Length" required>
+
+            <input type="number" step="any"
+            id="sepal_width" placeholder="Sepal Width" required>
+
+            <input type="number" step="any"
+            id="petal_length" placeholder="Petal Length" required>
+
+            <input type="number" step="any"
+            id="petal_width" placeholder="Petal Width" required>
+
+            <button type="submit">Predict Flower</button>
+
+        </form>
+
+        <div id="result"></div>
+
+    </div>
+
+
+    <script>
+
+        document.getElementById("predictionForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const data = {
+
+                sepal_length:
+                Number(document.getElementById("sepal_length").value),
+
+                sepal_width:
+                Number(document.getElementById("sepal_width").value),
+
+                petal_length:
+                Number(document.getElementById("petal_length").value),
+
+                petal_width:
+                Number(document.getElementById("petal_width").value)
+
+            };
+
+            const resultElement = document.getElementById("result");
+
+            resultElement.innerText = "Predicting...";
+
+            try {
+
+                const response = await fetch("/api/predict", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(data)
+
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Prediction failed");
+                }
+
+                resultElement.innerText =
+                "Predicted Flower: " + result.prediction;
+
+            }
+
+            catch(error) {
+
+                resultElement.innerText = "Error: " + error.message;
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
+----------------------------------------
+
+Save the file.
+
+EXPLANATION:
+
+HTML:
+Creates the webpage structure.
+
+CSS:
+Styles the webpage.
+
+JavaScript:
+Sends the entered measurements to the backend.
+
+fetch():
+Communicates with the backend API.
+
+JSON:
+Transfers the measurements and prediction data.
+
+
+------------------------------------------------------------
+9. CREATE NGINX CONFIGURATION
+------------------------------------------------------------
+
+Create:
+
+nano nginx.conf
+
+Add:
+
+----------------------------------------
+FILE: frontend/nginx.conf
+----------------------------------------
+
+server {
+
+    listen 80;
+
+    server_name localhost;
+
+    root /usr/share/nginx/html;
+
+    index index.html;
+
+    location / {
+
+        try_files $uri $uri/ /index.html;
+
+    }
+
+    location /api/ {
+
+        proxy_pass http://backend:5000/;
+
+        proxy_set_header Host $host;
+
+        proxy_set_header X-Real-IP $remote_addr;
+
+    }
+
+}
+
+----------------------------------------
+
+Save the file.
+
+EXPLANATION:
+
+Nginx is used to serve the frontend webpage.
+
+The frontend communicates with the backend through Nginx.
+
+When the browser requests:
+
+/api/predict
+
+Nginx forwards the request to:
+
+http://backend:5000/predict
+
+Here, backend is the service name defined in Docker Compose.
+
+Docker Compose provides internal networking between services.
+
+
+------------------------------------------------------------
+10. CREATE FRONTEND DOCKERFILE
+------------------------------------------------------------
+
+Create:
+
+nano Dockerfile
+
+Add:
+
+----------------------------------------
+FILE: frontend/Dockerfile
+----------------------------------------
+
+FROM nginx:alpine
+
+COPY index.html /usr/share/nginx/html/index.html
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+----------------------------------------
+
+Save the file.
+
+EXPLANATION:
+
+FROM:
+Uses the Nginx image.
+
+COPY:
+Copies our webpage into the Nginx web directory.
+
+EXPOSE:
+Documents that Nginx uses port 80.
+
+
+------------------------------------------------------------
+11. CREATE DOCKER COMPOSE FILE
+------------------------------------------------------------
+
+Go back to the main project directory:
+
+cd ..
+
+Create the Compose file:
+
+nano compose.yaml
+
+Add the following code:
+
+----------------------------------------
+FILE: compose.yaml
+----------------------------------------
+
+services:
+
+  frontend:
+
+    build: ./frontend
+
+    container_name: iris-frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - backend
+
+
+  backend:
+
+    build: ./backend
+
+    container_name: iris-backend
+
+    environment:
+
+      DB_HOST: db
+
+      DB_NAME: irisdb
+
+      DB_USER: admin
+
+      DB_PASSWORD: admin123
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+  db:
+
+    image: postgres:16-alpine
+
+    container_name: iris-database
+
+    environment:
+
+      POSTGRES_DB: irisdb
+
+      POSTGRES_USER: admin
+
+      POSTGRES_PASSWORD: admin123
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U admin -d irisdb"]
+
+      interval: 5s
+
+      timeout: 5s
+
+      retries: 5
+
+
+volumes:
+
+  postgres_data:
+
+----------------------------------------
+
+Save the file.
+
+IMPORTANT:
+
+The indentation in YAML is important.
+
+Use spaces instead of tabs.
+
+EXPLANATION OF COMPOSE FILE:
+
+services:
+Defines the containers required by the application.
+
+frontend:
+Builds the frontend image from the frontend directory.
+
+backend:
+Builds the Flask backend image from the backend directory.
+
+db:
+Uses the official PostgreSQL image.
+
+build:
+Specifies the directory containing the Dockerfile.
+
+image:
+Specifies an image to use.
+
+container_name:
+Assigns a name to the container.
+
+ports:
+Maps the host port to the container port.
+
+8080:80 means:
+Host port 8080 connects to container port 80.
+
+environment:
+Passes configuration values to the container.
+
+depends_on:
+Defines startup dependencies between services.
+
+healthcheck:
+Checks whether the database is ready.
+
+volumes:
+Stores database information persistently.
+
+postgres_data:
+The named volume used to store PostgreSQL data.
+
+
+------------------------------------------------------------
+12. UNDERSTANDING THE THREE SERVICES
+------------------------------------------------------------
+
+SERVICE 1: FRONTEND
+
+Technology:
+Nginx, HTML, CSS, JavaScript.
+
+Container name:
+iris-frontend
+
+Port:
+8080 on host, 80 inside container.
+
+Purpose:
+Displays the webpage to the user.
+
+SERVICE 2: BACKEND
+
+Technology:
+Python, Flask, Scikit-learn.
+
+Container name:
+iris-backend
+
+Port:
+5000 inside the container.
+
+Purpose:
+Processes input and performs AI predictions.
+
+SERVICE 3: DATABASE
+
+Technology:
+PostgreSQL.
+
+Container name:
+iris-database
+
+Port:
+5432 inside the container.
+
+Purpose:
+Stores prediction history.
+
+NOTE:
+Only the frontend is exposed to the host in this setup.
+The backend and database communicate through the internal
+Docker Compose network.
+
+
+------------------------------------------------------------
+13. VALIDATE DOCKER COMPOSE FILE
+------------------------------------------------------------
+
+Make sure you are inside the main project directory.
+
+Run:
+
+sudo docker compose config
+
+This command checks the Compose configuration.
+
+If the configuration is valid, Docker Compose displays
+the expanded configuration.
+
+If there is an error, check:
+1. YAML indentation.
+2. Missing colons.
+3. Incorrect directory names.
+4. Incorrect file names.
+
+
+------------------------------------------------------------
+14. BUILD AND START ALL SERVICES
+------------------------------------------------------------
+
+Run:
+
+sudo docker compose up --build -d
+
+Explanation:
+
+docker compose:
+Runs Docker Compose commands.
+
+up:
+Creates and starts the services.
+
+--build:
+Builds the application images before starting.
+
+-d:
+Runs the containers in the background.
+
+Docker Compose will:
+
+1. Build the frontend image.
+2. Build the backend image.
+3. Download the PostgreSQL image if necessary.
+4. Create the Docker network.
+5. Create the database volume.
+6. Start the database.
+7. Start the backend.
+8. Start the frontend.
+
+
+------------------------------------------------------------
+15. VERIFY RUNNING CONTAINERS
+------------------------------------------------------------
+
+Run:
+
+sudo docker compose ps
+
+Expected services:
+
+iris-frontend
+iris-backend
+iris-database
+
+All three services should be running.
+
+You can also run:
+
+sudo docker ps
+
+This displays the running containers.
+
+
+------------------------------------------------------------
+16. TEST THE APPLICATION
+------------------------------------------------------------
+
+Step 1:
+
+Open your web browser.
+
+Step 2:
+
+Enter:
+
+http://localhost:8080
+
+Step 3:
+
+The Iris Flower Predictor webpage should appear.
+
+Step 4:
+
+Enter the following values:
+
+Sepal Length: 5.1
+Sepal Width: 3.5
+Petal Length: 1.4
+Petal Width: 0.2
+
+Step 5:
+
+Click Predict Flower.
+
+Expected result:
+
+Predicted Flower: setosa
+
+The backend processes the input and stores the prediction
+in the PostgreSQL database.
+
+
+------------------------------------------------------------
+17. VERIFY DATABASE RECORDS
+------------------------------------------------------------
+
+Run:
+
+sudo docker compose exec db psql -U admin -d irisdb
+
+This opens the PostgreSQL command-line interface.
+
+Execute:
+
+SELECT * FROM predictions;
+
+Expected result:
+
+The table displays the stored prediction records.
+
+Example:
+
+id | sepal_length | sepal_width | petal_length | petal_width | prediction
+1  | 5.1          | 3.5         | 1.4          | 0.2         | setosa
+
+To exit PostgreSQL:
+
+\q
+
+
+------------------------------------------------------------
+18. VIEW LOGS OF INDIVIDUAL SERVICES
+------------------------------------------------------------
+
+View all service logs:
+
+sudo docker compose logs
+
+View backend logs:
+
+sudo docker compose logs backend
+
+View frontend logs:
+
+sudo docker compose logs frontend
+
+View database logs:
+
+sudo docker compose logs db
+
+Continuously monitor logs:
+
+sudo docker compose logs -f
+
+Press CTRL + C to stop monitoring.
+
+
+------------------------------------------------------------
+19. STOP AND REMOVE ALL SERVICES
+------------------------------------------------------------
+
+Stop and remove containers and the Compose network:
+
+sudo docker compose down
+
+This removes the containers and network.
+
+The named PostgreSQL volume remains.
+
+To remove containers, network, and database volume:
+
+sudo docker compose down -v
+
+IMPORTANT:
+
+The -v option deletes the database volume and its stored data.
+
+Use it only when you want to reset the database completely.
+
+
+------------------------------------------------------------
+20. IMPORTANT DOCKER COMPOSE COMMANDS
+------------------------------------------------------------
+
+Check Docker Compose version:
+
+docker compose version
+
+Validate Compose file:
+
+sudo docker compose config
+
+Build and start services:
+
+sudo docker compose up --build -d
+
+Start existing services:
+
+sudo docker compose up -d
+
+List services:
+
+sudo docker compose ps
+
+View logs:
+
+sudo docker compose logs
+
+View a particular service log:
+
+sudo docker compose logs backend
+
+Stop and remove services:
+
+sudo docker compose down
+
+Remove services and volumes:
+
+sudo docker compose down -v
+
+Rebuild services:
+
+sudo docker compose build
+
+Execute a command inside a service:
+
+sudo docker compose exec db psql -U admin -d irisdb
+
+
+------------------------------------------------------------
+21. COMMON ERRORS AND SOLUTIONS
+------------------------------------------------------------
+
+ERROR 1: Docker Compose command not found
+
+Reason:
+Docker Compose plugin is not installed.
+
+Solution:
+
+sudo apt install docker-compose-plugin
+
+
+ERROR 2: YAML parsing error
+
+Reason:
+Incorrect indentation or syntax in compose.yaml.
+
+Solution:
+Check the spaces and indentation.
+
+Validate using:
+
+sudo docker compose config
+
+
+ERROR 3: Backend cannot connect to database
+
+Reason:
+Database may not be ready.
+
+Solution:
+Check database health:
+
+sudo docker compose ps
+
+Check database logs:
+
+sudo docker compose logs db
+
+The backend has a retry mechanism to wait for the database.
+
+
+ERROR 4: Website is not opening
+
+Reason:
+Frontend container may not be running.
+
+Solution:
+
+sudo docker compose ps
+
+sudo docker compose logs frontend
+
+Check:
+
+http://localhost:8080
+
+
+ERROR 5: Prediction is not working
+
+Reason:
+Backend may have encountered an error.
+
+Solution:
+
+sudo docker compose logs backend
+
+Check whether the backend is running.
+
+
+ERROR 6: Database records are not appearing
+
+Reason:
+The prediction request may not have reached the database.
+
+Solution:
+
+sudo docker compose logs backend
+
+Open PostgreSQL:
+
+sudo docker compose exec db psql -U admin -d irisdb
+
+Run:
+
+SELECT * FROM predictions;
+
+
+ERROR 7: Port 8080 is already in use
+
+Reason:
+Another application is using port 8080.
+
+Solution:
+Change the frontend port mapping in compose.yaml:
+
+ports:
+  - "8081:80"
+
+Restart:
+
+sudo docker compose down
+
+sudo docker compose up --build -d
+
+Open:
+
+http://localhost:8081
+
+
+------------------------------------------------------------
+22. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is Docker Compose?
+
+Ans:
+Docker Compose is a tool used to define and manage
+multi-container Docker applications.
+
+Q2. Why do we use Docker Compose?
+
+Ans:
+It allows us to start and manage multiple services
+using a single configuration file.
+
+Q3. What is compose.yaml?
+
+Ans:
+It is a YAML configuration file that defines services,
+networks, volumes, and other application settings.
+
+Q4. What is a service in Docker Compose?
+
+Ans:
+A service defines how a container should be built and run.
+
+Q5. What is the difference between Docker and Docker Compose?
+
+Ans:
+Docker is used to build and run containers.
+Docker Compose is used to manage multiple services together.
+
+Q6. What is a volume?
+
+Ans:
+A volume provides persistent storage for container data.
+
+Q7. Why do we use PostgreSQL?
+
+Ans:
+PostgreSQL is a relational database used to store structured data.
+
+Q8. What is the purpose of depends_on?
+
+Ans:
+It defines dependencies between services.
+
+Q9. What is a healthcheck?
+
+Ans:
+It checks whether a service is healthy and ready.
+
+Q10. What is the purpose of ports?
+
+Ans:
+It maps a port on the host computer to a port inside
+the container.
+
+Q11. What does 8080:80 mean?
+
+Ans:
+Host port 8080 maps to container port 80.
+
+Q12. What is the purpose of environment variables?
+
+Ans:
+They pass configuration information to containers.
+
+Q13. What is the purpose of docker compose up?
+
+Ans:
+It creates and starts the services.
+
+Q14. What is the purpose of docker compose down?
+
+Ans:
+It stops and removes the containers and network created
+by the Compose application.
+
+Q15. What is the difference between docker compose stop
+and docker compose down?
+
+Ans:
+Stop stops running containers.
+Down stops and removes containers and the Compose network.
+
+Q16. What is Nginx?
+
+Ans:
+Nginx is a web server that can serve static webpages
+and act as a reverse proxy.
+
+Q17. What is a reverse proxy?
+
+Ans:
+A reverse proxy receives requests from clients and forwards
+them to another server.
+
+Q18. Why is the database volume important?
+
+Ans:
+It preserves database information even when the database
+container is removed.
+
+Q19. Can multiple containers communicate with each other?
+
+Ans:
+Yes. Containers can communicate through Docker networks.
+
+Q20. What is the purpose of container_name?
+
+Ans:
+It assigns a specific name to a container.
+
+
+------------------------------------------------------------
+23. RESULT
+------------------------------------------------------------
+
+Successfully developed a multi-container Iris AI application
+using Docker Compose.
+
+Created separate frontend, backend, and PostgreSQL database
+services.
+
+Successfully built and started all services using a single
+Compose configuration file.
+
+Tested the application through the browser and verified that
+prediction records were stored in PostgreSQL.
+
+
+------------------------------------------------------------
+24. QUICK REVISION BEFORE PRACTICAL EXAM
+------------------------------------------------------------
+
+1. Create project directory.
+
+2. Create backend directory.
+
+3. Add backend app.py.
+
+4. Add backend requirements.txt.
+
+5. Add backend Dockerfile.
+
+6. Create frontend directory.
+
+7. Add index.html.
+
+8. Add nginx.conf.
+
+9. Add frontend Dockerfile.
+
+10. Create compose.yaml.
+
+11. Validate configuration:
+
+    sudo docker compose config
+
+12. Build and start:
+
+    sudo docker compose up --build -d
+
+13. Check containers:
+
+    sudo docker compose ps
+
+14. Open browser:
+
+    http://localhost:8080
+
+15. Test Iris prediction.
+
+16. Verify database:
+
+    sudo docker compose exec db psql -U admin -d irisdb
+
+17. View records:
+
+    SELECT * FROM predictions;
+
+18. Stop services:
+
+    sudo docker compose down
+
+
+============================================================
+END OF PRACTICAL 10
+============================================================

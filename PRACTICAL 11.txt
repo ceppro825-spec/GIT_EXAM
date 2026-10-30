@@ -1,0 +1,1565 @@
+============================================================
+PRACTICAL 11: DEPLOY AND SCALE AI APPLICATION USING MINIKUBE
+============================================================
+
+AIM:
+To deploy a containerized AI application on a local Kubernetes
+cluster using Minikube and perform scaling operations.
+
+------------------------------------------------------------
+1. UNDERSTANDING THE CONCEPTS
+------------------------------------------------------------
+
+What is Kubernetes?
+
+Kubernetes is an open-source platform used to deploy, manage,
+and scale containerized applications.
+
+What is Minikube?
+
+Minikube is a tool that runs a local Kubernetes cluster
+on a computer.
+
+What is a Kubernetes cluster?
+
+A cluster is a collection of machines that run containerized
+applications.
+
+What is a Pod?
+
+A Pod is the smallest deployable unit in Kubernetes.
+It contains one or more containers.
+
+What is a Deployment?
+
+A Deployment manages Pods and ensures the required number
+of application replicas are running.
+
+What is a Replica?
+
+A replica is another running copy of an application Pod.
+
+What is a Service?
+
+A Service provides a stable network endpoint to access
+a group of Pods.
+
+What is kubectl?
+
+kubectl is the command-line tool used to communicate with
+and manage a Kubernetes cluster.
+
+What is a Kubernetes manifest?
+
+A manifest is a YAML file that defines Kubernetes resources.
+
+What is Persistent Volume Claim (PVC)?
+
+A PVC requests storage from Kubernetes so that application
+data can persist beyond the lifetime of a container.
+
+
+------------------------------------------------------------
+2. APPLICATION ARCHITECTURE
+------------------------------------------------------------
+
+We will deploy the same Iris AI application used in
+Practical 10.
+
+The application contains three services:
+
+1. FRONTEND
+   Technology: Nginx, HTML, CSS, JavaScript
+
+2. BACKEND
+   Technology: Python, Flask, Scikit-learn
+
+3. DATABASE
+   Technology: PostgreSQL
+
+Architecture:
+
+             USER
+               |
+               |
+               v
+          FRONTEND
+          (Nginx)
+               |
+               |
+               v
+           BACKEND
+       (Flask + AI Model)
+               |
+               |
+               v
+           DATABASE
+          (PostgreSQL)
+
+Kubernetes will manage these application components.
+
+
+------------------------------------------------------------
+3. CHECK REQUIRED SOFTWARE
+------------------------------------------------------------
+
+Open Ubuntu Terminal.
+
+Check Docker:
+
+docker --version
+
+Check Docker service:
+
+sudo systemctl status docker
+
+Check Docker Compose:
+
+docker compose version
+
+If Docker is not installed, install it using Practical 9.
+
+We also need:
+
+1. Minikube
+2. kubectl
+
+kubectl is used to manage Kubernetes resources.
+
+
+------------------------------------------------------------
+4. INSTALL MINIKUBE
+------------------------------------------------------------
+
+Step 1: Download the latest Minikube package for
+64-bit Intel/AMD Ubuntu.
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+
+Step 2: Install Minikube.
+
+sudo dpkg -i minikube_latest_amd64.deb
+
+Step 3: Verify installation.
+
+minikube version
+
+Expected output:
+
+minikube version: ...
+
+
+NOTE:
+The above package is for x86-64 systems.
+
+Check your system architecture using:
+
+uname -m
+
+For ARM64 systems, use the ARM64 installation package
+from the official Minikube installation page.
+
+Official reference:
+https://minikube.sigs.k8s.io/docs/start/
+
+
+------------------------------------------------------------
+5. INSTALL KUBECTL
+------------------------------------------------------------
+
+Step 1: Download kubectl for 64-bit Intel/AMD Ubuntu.
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+Step 2: Install kubectl.
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+Step 3: Remove downloaded file.
+
+rm kubectl
+
+Step 4: Verify installation.
+
+kubectl version --client
+
+Expected output:
+
+Client Version: ...
+
+
+Official reference:
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+
+------------------------------------------------------------
+6. CONFIGURE DOCKER PERMISSIONS
+------------------------------------------------------------
+
+Minikube's Docker driver needs access to Docker.
+
+Check whether Docker works without sudo:
+
+docker ps
+
+If this command gives a permission error, execute:
+
+sudo usermod -aG docker $USER
+
+Then log out of Ubuntu and log in again.
+
+Alternatively, open a new terminal after running:
+
+newgrp docker
+
+Verify:
+
+docker ps
+
+NOTE:
+
+Membership in the Docker group grants powerful access to
+the host system, effectively similar to root privileges.
+
+Do not run Minikube with sudo unless specifically required
+by your system configuration.
+
+
+------------------------------------------------------------
+7. START THE MINIKUBE CLUSTER
+------------------------------------------------------------
+
+Step 1: Start Minikube using Docker driver.
+
+minikube start --driver=docker --cpus=2 --memory=4096
+
+Explanation:
+
+minikube start:
+Creates and starts a Kubernetes cluster.
+
+--driver=docker:
+Uses Docker to run the Minikube cluster.
+
+--cpus=2:
+Allocates two CPUs.
+
+--memory=4096:
+Allocates approximately 4 GB RAM.
+
+Step 2: Check Minikube status.
+
+minikube status
+
+Expected output should show:
+
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+Step 3: Check cluster information.
+
+kubectl cluster-info
+
+Step 4: Check Kubernetes nodes.
+
+kubectl get nodes
+
+Expected output:
+
+NAME       STATUS   ROLES
+minikube   Ready    control-plane
+
+This confirms that the local Kubernetes cluster is running.
+
+
+------------------------------------------------------------
+8. CREATE PROJECT DIRECTORY
+------------------------------------------------------------
+
+Create the project directory:
+
+mkdir -p ~/DevOps-Practical-Exam/Practical-11-Kubernetes
+
+Enter the directory:
+
+cd ~/DevOps-Practical-Exam/Practical-11-Kubernetes
+
+Create these directories:
+
+mkdir backend frontend k8s
+
+Project structure:
+
+Practical-11-Kubernetes/
+|
+|---- backend/
+|     |
+|     |---- app.py
+|     |---- requirements.txt
+|     |---- Dockerfile
+|
+|---- frontend/
+|     |
+|     |---- index.html
+|     |---- nginx.conf
+|     |---- Dockerfile
+|
+|---- k8s/
+|     |
+|     |---- deployment.yaml
+
+
+------------------------------------------------------------
+9. PREPARE APPLICATION FILES
+------------------------------------------------------------
+
+We will use the same frontend and backend source code
+developed in Practical 10.
+
+Copy or recreate the following files:
+
+BACKEND:
+
+backend/app.py
+backend/requirements.txt
+backend/Dockerfile
+
+FRONTEND:
+
+frontend/index.html
+frontend/nginx.conf
+frontend/Dockerfile
+
+Use the corresponding file contents from Practical 10.
+
+IMPORTANT BACKEND REQUIREMENTS:
+
+1. Flask application must listen on:
+
+   host = "0.0.0.0"
+   port = 5000
+
+2. Backend must connect to PostgreSQL using:
+
+   DB_HOST=db
+   DB_NAME=irisdb
+   DB_USER=admin
+   DB_PASSWORD=admin123
+
+3. Backend must create the predictions table.
+
+4. Backend must provide the /predict route.
+
+IMPORTANT FRONTEND REQUIREMENTS:
+
+The Nginx configuration must forward API requests to:
+
+http://backend:5000/
+
+The frontend must send prediction requests to:
+
+/api/predict
+
+This allows Nginx to communicate with the Kubernetes
+backend Service named backend.
+
+
+------------------------------------------------------------
+10. BUILD BACKEND DOCKER IMAGE
+------------------------------------------------------------
+
+Make sure you are in the main project directory.
+
+Run:
+
+docker build -t iris-backend:1.0 ./backend
+
+Explanation:
+
+docker build:
+Builds a Docker image.
+
+-t:
+Assigns a name and tag.
+
+iris-backend:1.0:
+Image name and version.
+
+./backend:
+Directory containing the backend Dockerfile.
+
+Verify:
+
+docker images
+
+Expected:
+
+iris-backend   1.0
+
+
+------------------------------------------------------------
+11. BUILD FRONTEND DOCKER IMAGE
+------------------------------------------------------------
+
+Run:
+
+docker build -t iris-frontend:1.0 ./frontend
+
+Verify:
+
+docker images
+
+Expected:
+
+iris-frontend   1.0
+
+
+------------------------------------------------------------
+12. LOAD IMAGES INTO MINIKUBE
+------------------------------------------------------------
+
+IMPORTANT:
+
+Minikube runs its own Kubernetes environment.
+
+The images built on the Ubuntu host may not automatically
+be available inside Minikube.
+
+We must load the images into Minikube.
+
+Step 1: Load backend image.
+
+minikube image load iris-backend:1.0
+
+Step 2: Load frontend image.
+
+minikube image load iris-frontend:1.0
+
+Step 3: Verify images.
+
+minikube image ls
+
+The output should contain:
+
+iris-backend:1.0
+iris-frontend:1.0
+
+Now Kubernetes can use these images without downloading
+them from Docker Hub.
+
+
+------------------------------------------------------------
+13. CREATE KUBERNETES DEPLOYMENT FILE
+------------------------------------------------------------
+
+Enter the k8s directory:
+
+cd k8s
+
+Create the YAML file:
+
+nano deployment.yaml
+
+Add the following configuration.
+
+----------------------------------------
+FILE: k8s/deployment.yaml
+----------------------------------------
+
+# DATABASE STORAGE
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+# DATABASE DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: db
+
+  template:
+    metadata:
+      labels:
+        app: db
+
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+
+          ports:
+            - containerPort: 5432
+
+          env:
+            - name: POSTGRES_DB
+              value: irisdb
+
+            - name: POSTGRES_USER
+              value: admin
+
+            - name: POSTGRES_PASSWORD
+              value: admin123
+
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U admin -d irisdb
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+
+# DATABASE SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector:
+    app: db
+
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+  type: ClusterIP
+
+---
+
+# BACKEND DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+
+      initContainers:
+        - name: wait-for-database
+          image: postgres:16-alpine
+
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h db -p 5432 -U admin -d irisdb;
+              do
+                echo "Waiting for database..."
+                sleep 2
+              done
+
+      containers:
+        - name: backend
+          image: iris-backend:1.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 5000
+
+          env:
+            - name: DB_HOST
+              value: db
+
+            - name: DB_NAME
+              value: irisdb
+
+            - name: DB_USER
+              value: admin
+
+            - name: DB_PASSWORD
+              value: admin123
+
+---
+
+# BACKEND SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+
+  ports:
+    - port: 5000
+      targetPort: 5000
+
+  type: ClusterIP
+
+---
+
+# FRONTEND DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+        - name: frontend
+          image: iris-frontend:1.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 80
+
+---
+
+# FRONTEND SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: iris-frontend
+spec:
+  selector:
+    app: frontend
+
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+
+  type: NodePort
+
+----------------------------------------
+
+Save the file.
+
+Press:
+
+CTRL + O
+Enter
+CTRL + X
+
+
+------------------------------------------------------------
+14. UNDERSTANDING THE KUBERNETES YAML FILE
+------------------------------------------------------------
+
+apiVersion:
+
+Specifies the Kubernetes API version used by the resource.
+
+kind:
+
+Specifies the resource type.
+
+Examples:
+
+Deployment
+Service
+PersistentVolumeClaim
+
+metadata:
+
+Contains the resource name and labels.
+
+spec:
+
+Defines the desired configuration of the resource.
+
+replicas:
+
+Specifies the number of application Pods required.
+
+selector:
+
+Identifies the Pods managed by a Deployment or targeted
+by a Service.
+
+template:
+
+Defines how Kubernetes should create Pods.
+
+containers:
+
+Defines the containers running inside a Pod.
+
+image:
+
+Specifies the Docker image used by the container.
+
+containerPort:
+
+Specifies the port used inside the container.
+
+env:
+
+Defines environment variables.
+
+volumeMounts:
+
+Mounts persistent storage inside a container.
+
+PersistentVolumeClaim:
+
+Requests persistent storage for PostgreSQL.
+
+Service:
+
+Provides network access to a group of Pods.
+
+ClusterIP:
+
+Provides internal communication within the cluster.
+
+NodePort:
+
+Exposes a service through a port on the Kubernetes node.
+
+initContainers:
+
+Runs a setup task before the main application container starts.
+
+readinessProbe:
+
+Checks whether a container is ready to receive traffic.
+
+imagePullPolicy: IfNotPresent:
+
+Uses the locally available image if it already exists.
+
+
+------------------------------------------------------------
+15. APPLY KUBERNETES CONFIGURATION
+------------------------------------------------------------
+
+Go back to the main project directory:
+
+cd ..
+
+Apply the deployment file:
+
+kubectl apply -f k8s/deployment.yaml
+
+Expected output:
+
+persistentvolumeclaim/postgres-pvc created
+deployment.apps/db created
+service/db created
+deployment.apps/backend created
+service/backend created
+deployment.apps/frontend created
+service/iris-frontend created
+
+This command creates the Kubernetes resources.
+
+NOTE:
+
+If you run the same command again after changing the YAML,
+Kubernetes updates the existing resources.
+
+
+------------------------------------------------------------
+16. CHECK KUBERNETES PODS
+------------------------------------------------------------
+
+Run:
+
+kubectl get pods
+
+Expected Pods:
+
+db-xxxxxxxxxx-xxxxx
+backend-xxxxxxxxxx-xxxxx
+frontend-xxxxxxxxxx-xxxxx
+
+Their STATUS should eventually become:
+
+Running
+
+To continuously monitor Pods:
+
+kubectl get pods -w
+
+Press CTRL + C to stop monitoring.
+
+Explanation:
+
+A Pod is the smallest deployable unit in Kubernetes.
+
+In this application, we have:
+
+1. Database Pod
+2. Backend Pod
+3. Frontend Pod
+
+
+------------------------------------------------------------
+17. CHECK DEPLOYMENTS
+------------------------------------------------------------
+
+Run:
+
+kubectl get deployments
+
+Expected output:
+
+NAME       READY   UP-TO-DATE   AVAILABLE
+db         1/1     1            1
+backend    1/1     1            1
+frontend   1/1     1            1
+
+Explanation:
+
+READY:
+Number of available replicas compared to desired replicas.
+
+UP-TO-DATE:
+Number of Pods updated to the latest Deployment configuration.
+
+AVAILABLE:
+Number of Pods available to serve requests.
+
+
+------------------------------------------------------------
+18. CHECK SERVICES
+------------------------------------------------------------
+
+Run:
+
+kubectl get services
+
+Expected services:
+
+NAME           TYPE        PORT(S)
+db             ClusterIP   5432/TCP
+backend        ClusterIP   5000/TCP
+iris-frontend  NodePort    80:30080/TCP
+
+Explanation:
+
+db:
+Used by the backend to communicate with PostgreSQL.
+
+backend:
+Used by the frontend to communicate with Flask.
+
+iris-frontend:
+Allows users to access the application from outside
+the Kubernetes cluster.
+
+
+------------------------------------------------------------
+19. ACCESS THE APPLICATION
+------------------------------------------------------------
+
+Step 1: Run:
+
+minikube service iris-frontend --url
+
+This command displays the URL for accessing the frontend.
+
+Example:
+
+http://192.168.49.2:30080
+
+The actual address may be different.
+
+Step 2:
+
+Copy the URL into your browser.
+
+Step 3:
+
+The Iris Flower Predictor webpage should appear.
+
+Step 4:
+
+Enter the sample values:
+
+Sepal Length: 5.1
+Sepal Width: 3.5
+Petal Length: 1.4
+Petal Width: 0.2
+
+Step 5:
+
+Click Predict Flower.
+
+Expected output:
+
+Predicted Flower: setosa
+
+The frontend communicates with the backend.
+
+The backend performs the prediction and stores the result
+in PostgreSQL.
+
+
+------------------------------------------------------------
+20. SCALE THE APPLICATION
+------------------------------------------------------------
+
+What is scaling?
+
+Scaling means increasing or decreasing the number of
+application instances according to the requirement.
+
+In Kubernetes, we can scale a Deployment by changing
+its replica count.
+
+Step 1: Check current backend replicas.
+
+kubectl get deployments
+
+Initially:
+
+backend   1/1
+
+Step 2: Scale backend to three replicas.
+
+kubectl scale deployment backend --replicas=3
+
+Step 3: Check Pods.
+
+kubectl get pods
+
+Expected:
+
+Three backend Pods should be running.
+
+Step 4: Check backend Deployment.
+
+kubectl get deployment backend
+
+Expected:
+
+READY: 3/3
+
+Step 5: Scale down to one replica.
+
+kubectl scale deployment backend --replicas=1
+
+Step 6: Verify.
+
+kubectl get deployment backend
+
+Expected:
+
+READY: 1/1
+
+IMPORTANT:
+
+Scale the backend, not the database.
+
+The database is kept at one replica in this practical because
+we have not configured database replication.
+
+The frontend continues accessing backend Pods through
+the same backend Service.
+
+
+------------------------------------------------------------
+21. VIEW APPLICATION LOGS
+------------------------------------------------------------
+
+List Pods:
+
+kubectl get pods
+
+View backend logs:
+
+kubectl logs deployment/backend
+
+View database logs:
+
+kubectl logs deployment/db
+
+View frontend logs:
+
+kubectl logs deployment/frontend
+
+These commands help identify application errors.
+
+
+------------------------------------------------------------
+22. DESCRIBE KUBERNETES RESOURCES
+------------------------------------------------------------
+
+Describe all Pods:
+
+kubectl describe pods
+
+Describe backend Deployment:
+
+kubectl describe deployment backend
+
+Describe frontend Service:
+
+kubectl describe service iris-frontend
+
+Describe database Pod:
+
+kubectl describe pod -l app=db
+
+The describe command displays detailed information such as:
+
+1. Resource configuration.
+2. Pod status.
+3. Events.
+4. Container information.
+5. Errors and warnings.
+
+
+------------------------------------------------------------
+23. ACCESS DATABASE RECORDS
+------------------------------------------------------------
+
+Find the database Pod:
+
+kubectl get pods -l app=db
+
+Run the following command:
+
+kubectl exec deployment/db -- psql -U admin -d irisdb -c "SELECT * FROM predictions;"
+
+This displays the prediction history stored in PostgreSQL.
+
+The database data is stored using the PersistentVolumeClaim.
+
+
+------------------------------------------------------------
+24. DELETE KUBERNETES RESOURCES
+------------------------------------------------------------
+
+To delete all resources created using the manifest:
+
+kubectl delete -f k8s/deployment.yaml
+
+Check Pods:
+
+kubectl get pods
+
+Check Services:
+
+kubectl get services
+
+Check Deployments:
+
+kubectl get deployments
+
+To delete the PersistentVolumeClaim separately:
+
+kubectl delete pvc postgres-pvc
+
+NOTE:
+
+Deleting the PVC can result in loss of stored database data,
+depending on the storage provisioner's reclaim policy.
+
+For this practical, remove resources only after collecting
+the required screenshots and evidence.
+
+
+------------------------------------------------------------
+25. STOP MINIKUBE
+------------------------------------------------------------
+
+Stop the local Kubernetes cluster:
+
+minikube stop
+
+Check status:
+
+minikube status
+
+To delete the Minikube cluster completely:
+
+minikube delete
+
+IMPORTANT:
+
+stop:
+Stops the cluster but preserves it for later use.
+
+delete:
+Deletes the Minikube cluster and its local resources.
+
+
+------------------------------------------------------------
+26. IMPORTANT KUBERNETES COMMANDS
+------------------------------------------------------------
+
+Check Minikube version:
+
+minikube version
+
+Start cluster:
+
+minikube start --driver=docker
+
+Check cluster status:
+
+minikube status
+
+Get cluster information:
+
+kubectl cluster-info
+
+Get nodes:
+
+kubectl get nodes
+
+Get Pods:
+
+kubectl get pods
+
+Get Deployments:
+
+kubectl get deployments
+
+Get Services:
+
+kubectl get services
+
+Apply YAML file:
+
+kubectl apply -f deployment.yaml
+
+Delete YAML resources:
+
+kubectl delete -f deployment.yaml
+
+Describe a Pod:
+
+kubectl describe pod pod-name
+
+View logs:
+
+kubectl logs pod-name
+
+Scale Deployment:
+
+kubectl scale deployment backend --replicas=3
+
+Check all resources:
+
+kubectl get all
+
+Access frontend:
+
+minikube service iris-frontend --url
+
+Stop Minikube:
+
+minikube stop
+
+Delete Minikube:
+
+minikube delete
+
+
+------------------------------------------------------------
+27. COMMON ERRORS AND SOLUTIONS
+------------------------------------------------------------
+
+ERROR 1: minikube command not found
+
+Reason:
+Minikube is not installed or is not available in PATH.
+
+Solution:
+Install Minikube and verify:
+
+minikube version
+
+
+ERROR 2: Docker permission denied
+
+Reason:
+Current user cannot access Docker daemon.
+
+Solution:
+
+sudo usermod -aG docker $USER
+
+Log out and log in again.
+
+Verify:
+
+docker ps
+
+
+ERROR 3: Minikube fails to start
+
+Reason:
+Docker may not be running or the computer may not
+have enough available resources.
+
+Solution:
+
+sudo systemctl start docker
+
+Check:
+
+docker ps
+
+Try:
+
+minikube start --driver=docker
+
+
+ERROR 4: ImagePullBackOff
+
+Reason:
+Kubernetes cannot find or download the required image.
+
+Solution:
+
+Check images:
+
+minikube image ls
+
+Load the image again:
+
+minikube image load iris-backend:1.0
+
+minikube image load iris-frontend:1.0
+
+Check the image name in the YAML file.
+
+
+ERROR 5: Pod is in Pending state
+
+Reason:
+The Pod may be waiting for storage, resources, or scheduling.
+
+Solution:
+
+kubectl describe pod pod-name
+
+Check the Events section.
+
+
+ERROR 6: Pod is in CrashLoopBackOff
+
+Reason:
+The container repeatedly starts and exits due to an error.
+
+Solution:
+
+kubectl logs pod-name
+
+Check the application code and configuration.
+
+
+ERROR 7: Backend cannot connect to database
+
+Reason:
+Database may not be ready or connection details are incorrect.
+
+Solution:
+
+kubectl get pods
+
+kubectl logs deployment/db
+
+kubectl logs deployment/backend
+
+Verify the DB_HOST environment variable is:
+
+db
+
+
+ERROR 8: Application is not opening
+
+Reason:
+Frontend Service may not be configured correctly.
+
+Solution:
+
+kubectl get services
+
+kubectl get pods
+
+Run:
+
+minikube service iris-frontend --url
+
+Use the URL displayed by the command.
+
+
+ERROR 9: PVC is Pending
+
+Reason:
+Storage provisioner may not be available.
+
+Solution:
+
+kubectl get pvc
+
+kubectl get storageclass
+
+Check Minikube status and storage provisioner.
+
+Minikube may take some time to initialize storage.
+
+
+------------------------------------------------------------
+28. IMPORTANT VIVA QUESTIONS
+------------------------------------------------------------
+
+Q1. What is Kubernetes?
+
+Ans:
+Kubernetes is an open-source container orchestration platform.
+
+Q2. What is Minikube?
+
+Ans:
+Minikube runs a local Kubernetes cluster on a computer.
+
+Q3. What is kubectl?
+
+Ans:
+kubectl is the command-line tool used to manage Kubernetes.
+
+Q4. What is a Pod?
+
+Ans:
+A Pod is the smallest deployable unit in Kubernetes.
+
+Q5. What is a Deployment?
+
+Ans:
+A Deployment manages Pods and maintains the required
+number of replicas.
+
+Q6. What is a Service?
+
+Ans:
+A Service provides a stable network endpoint to access Pods.
+
+Q7. What is scaling?
+
+Ans:
+Scaling means increasing or decreasing the number of
+application instances.
+
+Q8. What is a replica?
+
+Ans:
+A replica is another running copy of an application Pod.
+
+Q9. What is NodePort?
+
+Ans:
+NodePort exposes a Service through a port on the Kubernetes node.
+
+Q10. What is ClusterIP?
+
+Ans:
+ClusterIP provides internal network access to a Service.
+
+Q11. What is a PersistentVolumeClaim?
+
+Ans:
+PVC requests persistent storage for an application.
+
+Q12. What is the difference between Docker and Kubernetes?
+
+Ans:
+Docker is used to build and run containers.
+Kubernetes manages and orchestrates containerized applications.
+
+Q13. What is a Kubernetes manifest?
+
+Ans:
+It is a YAML file defining Kubernetes resources.
+
+Q14. What is kubectl apply?
+
+Ans:
+It creates or updates Kubernetes resources using
+configuration files.
+
+Q15. What is kubectl get pods?
+
+Ans:
+It displays the Pods in the current namespace.
+
+Q16. What is kubectl describe?
+
+Ans:
+It displays detailed information about a Kubernetes resource.
+
+Q17. What is CrashLoopBackOff?
+
+Ans:
+It indicates that a container repeatedly fails to start.
+
+Q18. What is ImagePullBackOff?
+
+Ans:
+It indicates that Kubernetes is unable to retrieve
+the required container image.
+
+Q19. What is a Kubernetes cluster?
+
+Ans:
+A cluster is a group of machines that run containerized
+applications under Kubernetes management.
+
+Q20. What is the purpose of minikube stop?
+
+Ans:
+It stops the local Kubernetes cluster without deleting it.
+
+
+------------------------------------------------------------
+29. RESULT
+------------------------------------------------------------
+
+Successfully created a local Kubernetes cluster using Minikube.
+
+Deployed the frontend, backend, and PostgreSQL database
+using Kubernetes Deployments and Services.
+
+Accessed the Iris AI application through the frontend Service.
+
+Successfully scaled the backend Deployment from one replica
+to three replicas and then scaled it down to one replica.
+
+
+------------------------------------------------------------
+30. QUICK REVISION BEFORE PRACTICAL EXAM
+------------------------------------------------------------
+
+1. Check Docker:
+
+   docker --version
+
+2. Check Minikube:
+
+   minikube version
+
+3. Check kubectl:
+
+   kubectl version --client
+
+4. Start Minikube:
+
+   minikube start --driver=docker
+
+5. Check cluster:
+
+   kubectl get nodes
+
+6. Build backend:
+
+   docker build -t iris-backend:1.0 ./backend
+
+7. Build frontend:
+
+   docker build -t iris-frontend:1.0 ./frontend
+
+8. Load images:
+
+   minikube image load iris-backend:1.0
+
+   minikube image load iris-frontend:1.0
+
+9. Apply Kubernetes file:
+
+   kubectl apply -f k8s/deployment.yaml
+
+10. Check Pods:
+
+    kubectl get pods
+
+11. Check Deployments:
+
+    kubectl get deployments
+
+12. Check Services:
+
+    kubectl get services
+
+13. Access application:
+
+    minikube service iris-frontend --url
+
+14. Scale backend:
+
+    kubectl scale deployment backend --replicas=3
+
+15. Verify scaling:
+
+    kubectl get pods
+
+16. Scale down:
+
+    kubectl scale deployment backend --replicas=1
+
+17. View logs:
+
+    kubectl logs deployment/backend
+
+18. Delete resources:
+
+    kubectl delete -f k8s/deployment.yaml
+
+19. Stop cluster:
+
+    minikube stop
+
+
+============================================================
+END OF PRACTICAL 11
+============================================================
+
+
+minikube start --driver=docker
+kubectl apply -f k8s/deployment.yaml
+kubectl scale deployment backend --replicas=3
