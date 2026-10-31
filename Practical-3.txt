@@ -1,0 +1,665 @@
+PRACTICAL 3 - GIT BRANCHES, PULL, MERGE CONFLICTS AND PULL REQUEST
+====================================================================
+
+AIM
+---
+To create two Git branches, add Python programs, pull changes from one
+branch into another, create a merge conflict by editing the same file
+in both branches, resolve the conflict, compare branches, and create a
+Pull Request from GIT-EXAM-2 to GIT-EXAM-1.
+
+IMPORTANT
+---------
+This practical is independent. It does not require Practical 1 or 2.
+
+These instructions use Ubuntu Terminal. The same Git commands work in
+Git Bash on the college computer.
+
+The practical uses:
+- GIT-EXAM-1: first branch.
+- GIT-EXAM-2: second branch.
+- palindrome.py: palindrome checking program.
+- palindrome2.py: another palindrome checking program.
+- program1.py: program to display squares from 1 to 10.
+
+We will deliberately edit program1.py differently on both branches
+so that Git reports a merge conflict.
+
+------------------------------------------------------------
+STEP 1 - CHECK GIT AND CONFIGURATION
+------------------------------------------------------------
+
+Open Terminal using Ctrl + Alt + T.
+
+Check Git:
+
+    git --version
+
+If Git is not installed:
+
+    sudo apt update
+    sudo apt install git -y
+
+Configure your identity if not already configured:
+
+    git config --global user.name "Your Name"
+    git config --global user.email "your-email@example.com"
+
+Verify:
+
+    git config --global --list
+
+------------------------------------------------------------
+STEP 2 - CREATE A PROJECT AND GITHUB REPOSITORY
+------------------------------------------------------------
+
+Create a folder:
+
+    cd ~
+    mkdir Practical-3
+    cd Practical-3
+
+Initialize Git:
+
+    git init
+    git branch -M main
+
+On GitHub:
+1. Sign in to https://github.com
+2. Click +, then New repository.
+3. Repository name: Practical-3-Git-Branches
+4. Choose Public or the visibility required by your examiner.
+5. Do not initialize with README, .gitignore, or License.
+6. Click Create repository.
+7. Copy the HTTPS URL.
+
+Connect the local repository (replace the example URL):
+
+    git remote add origin https://github.com/USERNAME/Practical-3-Git-Branches.git
+
+Verify:
+
+    git remote -v
+
+------------------------------------------------------------
+STEP 3 - CREATE THE FIRST PALINDROME PROGRAM
+------------------------------------------------------------
+
+Create the file:
+
+    nano palindrome.py
+
+Enter:
+
+    text = input("Enter a string: ")
+
+    if text == text[::-1]:
+        print("The string is a palindrome.")
+    else:
+        print("The string is not a palindrome.")
+
+Save:
+- Ctrl + O, then Enter.
+- Ctrl + X.
+
+Run:
+
+    python3 palindrome.py
+
+Example 1:
+
+    Enter a string: madam
+    The string is a palindrome.
+
+Example 2:
+
+    Enter a string: hello
+    The string is not a palindrome.
+
+EXPLANATION:
+- A palindrome reads the same forward and backward.
+- text[::-1] reverses the string.
+- The == operator compares the original and reversed strings.
+
+NOTE:
+This simple program is case-sensitive and treats spaces as characters.
+For example, "Madam" is not considered the same as "madam".
+
+------------------------------------------------------------
+STEP 4 - CREATE program1.py TO DISPLAY SQUARES FROM 1 TO 10
+------------------------------------------------------------
+
+Create:
+
+    nano program1.py
+
+Enter:
+
+    for number in range(1, 11):
+        print("Square of", number, "=", number ** 2)
+
+Save and exit Nano.
+
+Run:
+
+    python3 program1.py
+
+Expected output:
+
+    Square of 1 = 1
+    Square of 2 = 4
+    Square of 3 = 9
+    Square of 4 = 16
+    Square of 5 = 25
+    Square of 6 = 36
+    Square of 7 = 49
+    Square of 8 = 64
+    Square of 9 = 81
+    Square of 10 = 100
+
+EXPLANATION:
+- range(1, 11) generates numbers 1 through 10.
+- The ending value 11 is not included.
+- ** is the exponentiation operator.
+- number ** 2 calculates the square.
+
+------------------------------------------------------------
+STEP 5 - COMMIT THE INITIAL FILES TO MAIN
+------------------------------------------------------------
+
+Check:
+
+    ls
+    git status
+
+Stage and commit:
+
+    git add palindrome.py program1.py
+    git commit -m "Add palindrome and squares programs"
+
+Push main:
+
+    git push -u origin main
+
+Refresh the GitHub repository page and verify that both files appear.
+
+------------------------------------------------------------
+STEP 6 - CREATE GIT-EXAM-1
+------------------------------------------------------------
+
+Create and switch to the first branch:
+
+    git switch -c GIT-EXAM-1
+
+Check branches:
+
+    git branch
+
+Expected (asterisk marks the current branch):
+
+      main
+    * GIT-EXAM-1
+
+Push the new branch:
+
+    git push -u origin GIT-EXAM-1
+
+At this point, GIT-EXAM-1 contains:
+- palindrome.py
+- program1.py
+
+------------------------------------------------------------
+STEP 7 - CREATE GIT-EXAM-2
+------------------------------------------------------------
+
+Create the second branch from GIT-EXAM-1:
+
+    git switch -c GIT-EXAM-2
+
+Push it:
+
+    git push -u origin GIT-EXAM-2
+
+Check:
+
+    git branch
+
+Expected:
+
+      main
+      GIT-EXAM-1
+    * GIT-EXAM-2
+
+IMPORTANT:
+GIT-EXAM-2 is created from GIT-EXAM-1, so it initially contains
+the files and commits already present in GIT-EXAM-1.
+
+------------------------------------------------------------
+STEP 8 - ADD ANOTHER PALINDROME PROGRAM IN GIT-EXAM-2
+------------------------------------------------------------
+
+Create another file:
+
+    nano palindrome2.py
+
+Enter:
+
+    number = input("Enter a number: ")
+
+    if number == number[::-1]:
+        print(number, "is a palindrome.")
+    else:
+        print(number, "is not a palindrome.")
+
+Save and exit.
+
+Run:
+
+    python3 palindrome2.py
+
+Example 1:
+
+    Enter a number: 121
+    121 is a palindrome.
+
+Example 2:
+
+    Enter a number: 123
+    123 is not a palindrome.
+
+This program checks whether the entered number, treated as a string,
+reads the same forward and backward.
+
+Commit and push the new file:
+
+    git add palindrome2.py
+    git commit -m "Add second palindrome program"
+    git push -u origin GIT-EXAM-2
+
+------------------------------------------------------------
+STEP 9 - MODIFY program1.py IN GIT-EXAM-2
+------------------------------------------------------------
+
+We will modify the same file in both branches to demonstrate a
+merge conflict.
+
+While still on GIT-EXAM-2, open:
+
+    nano program1.py
+
+Replace its contents with:
+
+    print("Squares from 1 to 10 - Version 2")
+
+    for number in range(1, 11):
+        square = number * number
+        print(number, "->", square)
+
+Save and exit.
+
+Commit this change:
+
+    git add program1.py
+    git commit -m "Modify squares program in GIT-EXAM-2"
+
+Do NOT push or merge yet if you want to follow the conflict sequence
+below exactly.
+
+------------------------------------------------------------
+STEP 10 - MAKE A DIFFERENT CHANGE IN GIT-EXAM-1
+------------------------------------------------------------
+
+Switch to the first branch:
+
+    git switch GIT-EXAM-1
+
+Edit the same file:
+
+    nano program1.py
+
+Replace its contents with:
+
+    print("Squares table from 1 to 10 - Branch 1")
+
+    for number in range(1, 11):
+        print("Number:", number, "Square:", number ** 2)
+
+Save and exit.
+
+Commit and push this branch:
+
+    git add program1.py
+    git commit -m "Update squares program in GIT-EXAM-1"
+    git push origin GIT-EXAM-1
+
+Now the two branches have different committed versions of program1.py.
+
+------------------------------------------------------------
+STEP 11 - PULL GIT-EXAM-1 INTO GIT-EXAM-2
+------------------------------------------------------------
+
+Switch back to the second branch:
+
+    git switch GIT-EXAM-2
+
+Pull the latest changes from the first branch:
+
+    git pull origin GIT-EXAM-1
+
+EXPECTED:
+Git may report a merge conflict in program1.py, because both branches
+changed the same file after they shared a common version.
+
+A message may look similar to:
+
+    CONFLICT (content): Merge conflict in program1.py
+    Automatic merge failed; fix conflicts and then commit the result.
+
+Check status:
+
+    git status
+
+You should see program1.py listed as unmerged or both modified.
+
+IMPORTANT:
+A merge conflict is not a failure of Git. It means Git needs a person
+to decide which changes should be kept.
+
+------------------------------------------------------------
+STEP 12 - RESOLVE THE MERGE CONFLICT
+------------------------------------------------------------
+
+Open the conflicting file:
+
+    nano program1.py
+
+Git may have inserted conflict markers similar to:
+
+    <<<<<<< HEAD
+    print("Squares from 1 to 10 - Version 2")
+    ...
+    =======
+    print("Squares table from 1 to 10 - Branch 1")
+    ...
+    >>>>>>> <commit-id>
+
+Meaning:
+- <<<<<<< HEAD: content from the current branch, GIT-EXAM-2.
+- =======: separator between the two versions.
+- >>>>>>>: content coming from GIT-EXAM-1.
+
+Delete all conflict marker lines and choose the final code to keep.
+For example, keep this combined version:
+
+    print("Squares from 1 to 10 - Conflict Resolved")
+
+    for number in range(1, 11):
+        print("Number:", number, "Square:", number ** 2)
+
+Save and exit Nano.
+
+Run the file:
+
+    python3 program1.py
+
+Check status:
+
+    git status
+
+Mark the conflict as resolved:
+
+    git add program1.py
+
+Complete the merge with a commit:
+
+    git commit -m "Resolve conflict in program1.py"
+
+Push the updated second branch:
+
+    git push origin GIT-EXAM-2
+
+------------------------------------------------------------
+STEP 13 - VERIFY AND COMPARE BRANCHES
+------------------------------------------------------------
+
+List local and remote branches:
+
+    git branch -a
+
+View commit history:
+
+    git log --oneline --all --graph
+
+Compare the two branches:
+
+    git diff GIT-EXAM-1..GIT-EXAM-2
+
+This displays changes present in GIT-EXAM-2 compared with GIT-EXAM-1.
+
+To compare only program1.py:
+
+    git diff GIT-EXAM-1..GIT-EXAM-2 -- program1.py
+
+To see the files in the current folder:
+
+    ls
+
+The second branch should contain:
+- palindrome.py
+- palindrome2.py
+- program1.py
+
+------------------------------------------------------------
+STEP 14 - CREATE A PULL REQUEST FROM GIT-EXAM-2 TO GIT-EXAM-1
+------------------------------------------------------------
+
+Open the repository on GitHub.
+
+1. Click Pull requests.
+2. Click New pull request.
+3. Set base branch to: GIT-EXAM-1
+4. Set compare branch to: GIT-EXAM-2
+5. Review the changes.
+6. Click Create pull request.
+7. Title: Merge GIT-EXAM-2 into GIT-EXAM-1
+8. Description:
+   "This pull request adds another palindrome program and updates
+   program1.py. The merge conflict has been resolved."
+9. Click Create pull request.
+
+If the examiner asks you to merge:
+1. Open the Pull Request.
+2. Click Merge pull request.
+3. Click Confirm merge.
+
+If only creation is asked, leave the PR open.
+
+------------------------------------------------------------
+IMPORTANT CONCEPTS
+------------------------------------------------------------
+
+BRANCH:
+A separate line of development in the same Git repository.
+
+GIT SWITCH:
+Changes the currently selected branch.
+
+GIT PULL:
+Fetches changes from a remote repository and integrates them into
+the current branch.
+
+MERGE:
+Combines changes from one branch into another.
+
+MERGE CONFLICT:
+Occurs when Git cannot automatically combine changes, commonly
+because the same part of a file was changed differently in two branches.
+
+CONFLICT RESOLUTION:
+The developer edits the file, removes conflict markers, chooses the
+correct final content, stages the file, and commits the merge.
+
+PULL REQUEST:
+A request to review and merge changes from one branch into another.
+
+------------------------------------------------------------
+COMMON ERRORS AND SOLUTIONS
+------------------------------------------------------------
+
+1. ERROR: 'git: command not found'
+   SOLUTION:
+       sudo apt update
+       sudo apt install git -y
+
+2. ERROR: 'Author identity unknown'
+   SOLUTION:
+       git config --global user.name "Your Name"
+       git config --global user.email "your-email@example.com"
+
+3. ERROR: 'remote origin already exists'
+   SOLUTION:
+       git remote -v
+   To correct the URL:
+       git remote set-url origin https://github.com/USERNAME/REPOSITORY.git
+
+4. ERROR: 'nothing to commit, working tree clean'
+   MEANING:
+   No new changes are available to commit. Check whether the file
+   was saved and whether you are on the intended branch.
+
+5. NO CONFLICT APPEARS AFTER git pull
+   CHECK:
+       git branch
+       git status
+       git log --oneline --all --graph
+   Make sure:
+   - You are on GIT-EXAM-2.
+   - You committed a change to program1.py on GIT-EXAM-2.
+   - You separately committed a different change to program1.py
+     on GIT-EXAM-1.
+   - You are pulling origin GIT-EXAM-1 while on GIT-EXAM-2.
+
+6. ERROR: 'You have not concluded your merge'
+   MEANING:
+   A previous merge is still in progress.
+   SOLUTION:
+   Resolve the conflict, run git add on the resolved file, and
+   complete the merge using git commit.
+   If you need to cancel the merge instead:
+       git merge --abort
+
+7. ERROR: Push rejected
+   SOLUTION:
+   Check the branch and status:
+       git branch
+       git status
+   Complete any pending merge first. Then push the correct branch:
+       git push origin GIT-EXAM-2
+
+------------------------------------------------------------
+VIVA QUESTIONS AND ANSWERS
+------------------------------------------------------------
+
+Q1. What is Git?
+A. Git is a distributed version control system.
+
+Q2. What is a branch?
+A. A branch is a separate line of development in a repository.
+
+Q3. What is the purpose of GIT-EXAM-1 and GIT-EXAM-2?
+A. They allow us to work on separate versions of a project.
+
+Q4. What does git pull do?
+A. It fetches remote changes and integrates them into the current branch.
+
+Q5. What is a merge conflict?
+A. It occurs when Git cannot automatically combine different changes.
+
+Q6. Why did the conflict occur in program1.py?
+A. Both branches modified the same file differently after branching.
+
+Q7. What are conflict markers?
+A. They are markers Git inserts to show the competing versions:
+   <<<<<<<, =======, and >>>>>>>.
+
+Q8. How do you resolve a conflict?
+A. Edit the file, remove conflict markers, keep the required code,
+   stage the file, and commit the merge.
+
+Q9. What is the difference between git fetch and git pull?
+A. git fetch downloads remote changes without integrating them.
+   git pull downloads and integrates remote changes.
+
+Q10. What is a Pull Request?
+A. It is a request to review and merge changes from one branch into
+   another branch on GitHub.
+
+Q11. What does git diff do?
+A. It displays differences between files, commits, or branches.
+
+Q12. What does git log --oneline --all --graph do?
+A. It displays a compact graphical history of commits across branches.
+
+------------------------------------------------------------
+QUICK REVISION - COMMANDS
+------------------------------------------------------------
+
+    mkdir Practical-3
+    cd Practical-3
+    git init
+    git branch -M main
+
+    git remote add origin https://github.com/USERNAME/REPOSITORY.git
+
+    nano palindrome.py
+    nano program1.py
+    git add palindrome.py program1.py
+    git commit -m "Add initial programs"
+    git push -u origin main
+
+    git switch -c GIT-EXAM-1
+    git push -u origin GIT-EXAM-1
+
+    git switch -c GIT-EXAM-2
+    git push -u origin GIT-EXAM-2
+
+    nano palindrome2.py
+    git add palindrome2.py
+    git commit -m "Add second palindrome program"
+    git push origin GIT-EXAM-2
+
+    nano program1.py
+    git add program1.py
+    git commit -m "Modify squares program in branch 2"
+
+    git switch GIT-EXAM-1
+    nano program1.py
+    git add program1.py
+    git commit -m "Update squares program in branch 1"
+    git push origin GIT-EXAM-1
+
+    git switch GIT-EXAM-2
+    git pull origin GIT-EXAM-1
+
+    nano program1.py
+    git add program1.py
+    git commit -m "Resolve conflict"
+    git push origin GIT-EXAM-2
+
+    git branch -a
+    git log --oneline --all --graph
+    git diff GIT-EXAM-1..GIT-EXAM-2
+
+Create GitHub Pull Request:
+    base: GIT-EXAM-1
+    compare: GIT-EXAM-2
+
+------------------------------------------------------------
+RESULT
+------------------------------------------------------------
+
+Two branches, GIT-EXAM-1 and GIT-EXAM-2, were created. Python
+programs for palindrome checking and squares from 1 to 10 were added.
+Changes were pulled between branches, a merge conflict was generated
+and resolved, the branches were compared, and a Pull Request was
+created from GIT-EXAM-2 to GIT-EXAM-1.
