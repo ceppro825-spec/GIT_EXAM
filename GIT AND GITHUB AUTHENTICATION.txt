@@ -1,0 +1,390 @@
+GIT AND GITHUB AUTHENTICATION + .GITIGNORE
+==================================================
+
+PART 1: GITHUB AUTHENTICATION USING GH CLI
+==================================================
+
+PURPOSE:
+To authenticate GitHub CLI in Ubuntu and allow Git commands to push code to the correct GitHub account.
+
+My GitHub username:
+ceppro825-spec
+
+Repository:
+https://github.com/ceppro825-spec/GIT_EXAM
+
+STEP 1: CHECK GITHUB CLI
+
+Command:
+
+gh --version
+
+STEP 2: CHECK CURRENT AUTHENTICATION
+
+Command:
+
+gh auth status
+
+If the wrong account is logged in, log out:
+
+gh auth logout -h github.com -u shivrajjagtap13
+
+STEP 3: LOGIN TO GITHUB
+
+Command:
+
+gh auth login
+
+Select the following options:
+
+1. What account do you want to log into?
+   GitHub.com
+
+2. Preferred protocol:
+   HTTPS
+
+3. How would you like to authenticate?
+   Login with a web browser
+
+4. Copy the one-time authentication code displayed in the terminal.
+
+5. Press Enter to open the browser.
+
+6. Enter the code on GitHub and authorize using the correct account:
+   ceppro825-spec
+
+IMPORTANT:
+The one-time code is generated for each login. Never save or share it.
+
+STEP 4: VERIFY LOGIN
+
+Command:
+
+gh auth status
+
+Expected result:
+
+Logged in to github.com account ceppro825-spec
+
+STEP 5: CONFIGURE GIT AUTHENTICATION
+
+Command:
+
+gh auth setup-git
+
+This configures Git to use GitHub CLI credentials.
+
+STEP 6: CHECK REMOTE REPOSITORY
+
+Command:
+
+git remote -v
+
+Expected:
+
+origin https://github.com/ceppro825-spec/GIT_EXAM.git (fetch)
+origin https://github.com/ceppro825-spec/GIT_EXAM.git (push)
+
+STEP 7: PUSH CODE
+
+Command:
+
+git push -u origin main
+
+For an existing branch:
+
+git push
+
+IMPORTANT:
+If using another computer during the examination, authenticate again on that computer if necessary. Do not assume your laptop's login is available there.
+
+
+PART 2: PRACTICAL - GITIGNORE
+==================================================
+
+AIM:
+To create a .gitignore file and demonstrate that Git ignores specified files or folders.
+
+WHAT IS .GITIGNORE?
+
+A .gitignore file tells Git which untracked files and folders should not be tracked or uploaded to GitHub.
+
+STEP 1: OPEN PROJECT DIRECTORY
+
+cd ~/Desktop/GIT_EXAM
+
+STEP 2: CREATE .GITIGNORE FILE
+
+touch .gitignore
+
+STEP 3: OPEN THE FILE
+
+nano .gitignore
+
+STEP 4: WRITE THE FOLLOWING CONTENT
+
+IGNORE/
+
+This rule ignores the entire folder named IGNORE.
+
+Other useful examples:
+
+1.py          Ignore files named 1.py
+*.log         Ignore all log files
+*.txt         Ignore all text files
+__pycache__/  Ignore Python cache folders
+.env          Ignore .env file
+
+For this practical, use:
+
+IGNORE/
+
+STEP 5: SAVE THE FILE
+
+In Nano:
+
+Ctrl + O
+Press Enter
+Ctrl + X
+
+STEP 6: CREATE IGNORE DIRECTORY
+
+mkdir -p IGNORE
+
+STEP 7: CREATE FILES INSIDE IT
+
+touch IGNORE/test1.txt
+touch IGNORE/test2.txt
+
+STEP 8: CHECK GIT STATUS
+
+git status
+
+STEP 9: CHECK IGNORED FILES
+
+git status --ignored
+
+EXPECTED OUTPUT:
+
+Ignored files:
+    IGNORE/
+
+This confirms that Git is ignoring the folder.
+
+STEP 10: ADD AND COMMIT .GITIGNORE
+
+git add .gitignore
+
+git commit -m "Add gitignore file"
+
+STEP 11: PUSH TO GITHUB
+
+git push
+
+STEP 12: VERIFY ON GITHUB
+
+Open:
+
+https://github.com/ceppro825-spec/GIT_EXAM
+
+The .gitignore file should be visible.
+
+The IGNORE folder and its contents should not appear in the repository.
+
+
+PART 3: IMPORTANT GIT COMMANDS
+==================================================
+
+git init
+Initialize a Git repository.
+
+git status
+Check repository status.
+
+git add .
+Stage all eligible changes.
+
+git add .gitignore
+Stage only .gitignore.
+
+git commit -m "message"
+Save changes locally.
+
+git push
+Upload committed changes to GitHub.
+
+git pull
+Download and integrate remote changes.
+
+git branch
+Show local branches.
+
+git branch -a
+Show local and remote branches.
+
+git switch -c GIT-EXAM
+Create and switch to a new branch.
+
+git push -u origin GIT-EXAM
+Publish a branch to GitHub.
+
+git remote -v
+Show remote repository URLs.
+
+git status --ignored
+Show ignored files and folders.
+
+
+PART 4: IMPORTANT CONCEPTS
+==================================================
+
+1. Does .gitignore delete files from the computer?
+
+No. It only prevents Git from tracking matching untracked files.
+
+2. Why is .gitignore uploaded to GitHub?
+
+Because Git must share the ignore rules with other contributors.
+
+3. Why does an already tracked file still appear on GitHub?
+
+Because .gitignore does not automatically stop tracking files that Git already tracks.
+
+4. How do we stop tracking an already tracked folder?
+
+Command:
+
+git rm -r --cached IGNORE/
+
+Then:
+
+git add .gitignore
+git commit -m "Stop tracking ignored folder"
+git push
+
+This removes the folder from Git tracking but keeps the local files.
+
+5. Why did git rm --cached give a pathspec error?
+
+Because the IGNORE folder was not tracked by Git. There was nothing to remove.
+
+6. Difference between git add and git commit?
+
+git add stages changes.
+git commit saves staged changes in local Git history.
+git push uploads commits to GitHub.
+
+
+PART 5: COMMON ERRORS
+==================================================
+
+ERROR 1: Permission denied (403)
+
+Reason:
+Terminal is authenticated with an account that does not have write access.
+
+Solution:
+
+gh auth login
+gh auth setup-git
+gh auth status
+
+Ensure the correct GitHub account is active.
+
+ERROR 2: src refspec does not match any
+
+Reason:
+The branch name does not exist locally, or there is no commit to push.
+
+Solution:
+
+git branch
+git switch -c GIT-EXAM
+git push -u origin GIT-EXAM
+
+ERROR 3: Files are still visible on GitHub
+
+Possible reasons:
+
+1. Wrong folder name in .gitignore.
+2. Incorrect .gitignore rule.
+3. Files were already tracked before adding the ignore rule.
+
+Check:
+
+cat .gitignore
+git status --ignored
+git ls-files IGNORE/
+
+
+PART 6: VIVA QUESTIONS
+==================================================
+
+Q1. What is Git?
+Git is a distributed version control system.
+
+Q2. What is GitHub?
+GitHub is an online platform for hosting and collaborating on Git repositories.
+
+Q3. What is .gitignore?
+It is a file containing rules for files and folders Git should ignore.
+
+Q4. What is the purpose of git push?
+It uploads local commits to a remote repository.
+
+Q5. What is GitHub CLI?
+It is a command-line tool used to interact with GitHub.
+
+Q6. What does gh auth login do?
+It authenticates GitHub CLI with a GitHub account.
+
+Q7. What does gh auth setup-git do?
+It configures Git to use GitHub CLI credentials.
+
+Q8. What is the difference between git add and git push?
+git add stages files locally, while git push uploads commits to the remote repository.
+
+Q9. Does .gitignore delete files?
+No. It only prevents matching untracked files from being tracked.
+
+Q10. What does git status --ignored show?
+It displays ignored files and folders.
+
+
+QUICK REVISION
+==================================================
+
+GITHUB AUTHENTICATION:
+
+gh auth login
+gh auth status
+gh auth setup-git
+git push -u origin main
+
+GITIGNORE:
+
+touch .gitignore
+nano .gitignore
+
+Write:
+
+IGNORE/
+
+Create test files:
+
+mkdir -p IGNORE
+touch IGNORE/test1.txt IGNORE/test2.txt
+
+Verify:
+
+git status --ignored
+
+Commit and push:
+
+git add .gitignore
+git commit -m "Add gitignore file"
+git push
+
+==================================================
+END OF NOTES
+==================================================
